@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배곧고1 문법 완전 정복: 인터랙티브 학습 (심화편)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card {
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s ease;
+            break-inside: avoid;
+        }
+        .card-header {
+            cursor: pointer;
+        }
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.8s ease-in-out, padding 0.8s ease-in-out;
+            padding: 0 1.5rem;
+        }
+        .card.open .card-body {
+            max-height: 5000px; /* 충분히 큰 값 */
+            padding: 1.5rem;
+        }
+        .card.open .chevron {
+            transform: rotate(180deg);
+        }
+        .blank {
+            display: inline-block;
+            border-bottom: 2px dotted #9ca3af;
+            padding: 0 0.5rem;
+            min-width: 80px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 700;
+            color: #3b82f6;
+            transition: all 0.2s ease;
+        }
+        .blank:not(.revealed):hover {
+            background-color: #eff6ff;
+        }
+        .blank.revealed {
+            color: #1d4ed8;
+            border-bottom: 2px solid transparent;
+            cursor: default;
+        }
+        .example-block {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #f97316;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .example-q {
+            font-weight: 700;
+        }
+        .example-a {
+            background-color: #fff;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-top: 0.5rem;
+        }
+        .interactive-word {
+            background-color: #dbeafe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            border-bottom: 2px dashed #93c5fd;
+            transition: all 0.2s;
+        }
+        .interactive-word:hover {
+            background-color: #bfdbfe;
+        }
+        .analysis-popup {
+            position: absolute;
+            background-color: #1f2937;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f3f4f6;
+        }
+        .highlight {
+            background-color: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">배곧고1 문법 완전 정복 (심화편)</h1>
+            <p class="text-gray-600 mt-2">모든 개념과 사례를 정복하여 시험에 완벽 대비하세요.</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 sticky top-0 bg-gray-100 py-4 z-10 shadow-sm">
+            <button class="nav-link active text-base md:text-lg py-2 px-4 rounded-full" data-chapter="chapter2">2. 단어와 형태소</button>
+            <button class="nav-link text-base md:text-lg py-2 px-4 rounded-full" data-chapter="chapter3">3. 단어의 품사</button>
+            <button class="nav-link text-base md:text-lg py-2 px-4 rounded-full" data-chapter="chapter4">4. 단어의 형성</button>
+        </nav>
+
+        <main id="content-area">
+            <!-- 학습 내용이 여기에 동적으로 렌더링됩니다. -->
+        </main>
+        
+        <footer class="text-center mt-12">
+            <button id="test-link-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
+                학습 완료! 실전 테스트 도전하기 <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </footer>
+    </div>
+    
+    <div id="popup" class="analysis-popup"></div>
+
+    <script>
+        // 20페이지 분량의 전체 학습 데이터 (심화)
+        const learningData = {
+            'chapter2': {
+                title: '2. 단어와 형태소',
+                content: `
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">형태소의 뜻과 종류</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p class="text-lg">뜻을 가진 가장 작은 말의 단위는 <span class="blank" data-answer="형태소">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span> 이다.</p>
+                            <ul class="list-disc pl-6 mt-4 space-y-2">
+                                <li><b>자립성 유무:</b> <span class="blank" data-answer="자립 형태소">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>(홀로 쓰임) vs <span class="blank" data-answer="의존 형태소">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>(기대어 쓰임)</li>
+                                <li><b>의미의 성격:</b> <span class="blank" data-answer="실질 형태소">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>(실질적 의미) vs <span class="blank" data-answer="형식(문법) 형태소">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>(문법적 의미)</li>
+                                <li class="mt-2 text-sm text-gray-600">※ 모든 자립 형태소는 실질 형태소이며, 의존 형태소 중에서는 <span class="highlight">용언의 어간</span>만 실질 형태소이다.</li>
+                            </ul>
+                            <div class="example-block">
+                                <p class="example-q">사례 분석: 철수가 저녁에 빵을 먹었다.</p>
+                                <div class="example-a">
+                                    <p><b>형태소 분석:</b> <span class="interactive-word" data-analysis="자립, 실질, 명사">철수</span> / <span class="interactive-word" data-analysis="의존, 형식, 조사">가</span> / <span class="interactive-word" data-analysis="자립, 실질, 명사">저녁</span> / <span class="interactive-word" data-analysis="의존, 형식, 조사">에</span> / <span class="interactive-word" data-analysis="자립, 실질, 명사">빵</span> / <span class="interactive-word" data-analysis="의존, 형식, 조사">을</span> / <span class="interactive-word" data-analysis="의존, 실질, 어간">먹</span> / <span class="interactive-word" data-analysis="의존, 형식, 선어말어미">었</span> / <span class="interactive-word" data-analysis="의존, 형식, 어말어미">다</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">이형태 (異形態)</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p class="text-lg">하나의 형태소가 환경에 따라 다른 모습으로 나타나는 것을 <span class="blank" data-answer="이형태">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>라고 한다.</p>
+                            <div class="example-block">
+                                <p class="example-q">사례 탐구</p>
+                                <div class="example-a">
+                                    <p><b>주격 조사:</b> 김일영<span class="highlight">이</span> (자음 뒤), 아이유<span class="highlight">가</span> (모음 뒤)</p>
+                                    <p><b>접속 조사:</b> 음반<span class="highlight">과</span> (자음 뒤), 가수<span class="highlight">와</span> (모음 뒤)</p>
+                                    <p><b>목적격 조사:</b> 밥<span class="highlight">을</span> (자음 뒤), 너<span class="highlight">를</span> (모음 뒤)</p>
+                                    <p><b>연결 어미 (모음조화):</b> 받<span class="highlight">아</span> (양성모음 뒤), 적<span class="highlight">어</span> (음성모음 뒤)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">단어, 어간, 어근</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                             <p class="text-lg">문장에서 자립적으로 쓰일 수 있는 최소 단위는 <span class="blank" data-answer="단어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>이다. (단, <span class="highlight">조사</span>는 쉽게 분리되므로 단어로 인정)</p>
+                             <ul class="list-disc pl-6 mt-4 space-y-2">
+                                <li><span class="blank" data-answer="어간">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 용언이 <span class="highlight">활용</span>할 때 변하지 않는 부분. (예: 먹다, 먹고, 먹으니 -> '먹-')</li>
+                                <li><span class="blank" data-answer="어미">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 용언이 <span class="highlight">활용</span>할 때 변하는 부분. (예: -다, -고, -으니)</li>
+                                <li><span class="blank" data-answer="어근">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 단어를 <span class="highlight">분석</span>할 때 실질적 의미를 나타내는 중심 부분.</li>
+                                <li><span class="blank" data-answer="접사">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 어근에 붙어 뜻을 더하거나 문법 기능을 하는 부분.</li>
+                            </ul>
+                            <div class="example-block">
+                                <p class="example-q">Q&A: '치솟다'의 어근, 접사, 어간은?</p>
+                                <div class="example-a">
+                                    <p><b>어근:</b> <span class="blank" data-answer="솟">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>, <b>접사:</b> <span class="blank" data-answer="치-">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>, <b>어간:</b> <span class="blank" data-answer="치솟-">[&nbsp;&nbsp;&nbsp;&nbsp;]</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            'chapter3': {
+                title: '3. 단어의 품사',
+                content: `
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">품사 분류 (9품사)</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p class="text-lg">품사를 나누는 세 가지 기준은 <span class="blank" data-answer="형태">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>, <span class="blank" data-answer="기능">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>, <span class="blank" data-answer="의미">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>이다.</p>
+                            <table class="mt-4">
+                                <thead><tr><th>기능</th><th>품사</th><th>형태</th><th>설명</th></tr></thead>
+                                <tbody>
+                                    <tr><td rowspan="3"><b>체언</b></td><td>명사</td><td rowspan="5">불변어</td><td>이름 (사람, 사물...)</td></tr>
+                                    <tr><td>대명사</td><td>이름을 대신 (나, 너, 이것...)</td></tr>
+                                    <tr><td>수사</td><td>수량, 순서 (하나, 첫째...)</td></tr>
+                                    <tr><td rowspan="2"><b>수식언</b></td><td>관형사</td><td>체언 수식 (새, 헌, 이...)</td></tr>
+                                    <tr><td>부사</td><td>용언 등 수식 (매우, 빨리...)</td></tr>
+                                    <tr><td rowspan="2"><b>용언</b></td><td>동사</td><td rowspan="3">가변어</td><td>움직임, 작용 (먹다, 가다...)</td></tr>
+                                    <tr><td>형용사</td><td>성질, 상태 (예쁘다, 좋다...)</td></tr>
+                                    <tr><td><b>관계언</b></td><td>조사</td><td>문법적 관계 (이/가, 을/를...)</td></tr>
+                                    <tr><td><b>독립언</b></td><td>감탄사</td><td>불변어</td><td>놀람, 부름, 느낌 (아, 여보세요...)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">체언 (명사, 대명사, 수사) 사례 탐구</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p><b>의존 명사:</b> 관형어의 수식을 받아야만 사용 가능.</p>
+                            <p class="ml-4">예: 내가 알 <span class="highlight">리</span>가 있니? / 신발 한 <span class="highlight">켤레</span></p>
+                            <p class="mt-2"><b>대명사 (미지칭/부정칭/재귀칭):</b></p>
+                            <p class="ml-4">예: 저 사람은 <span class="highlight">누구</span>(미지칭)니? / <span class="highlight">누구</span>(부정칭)라도 할 수 있어. / 철수는 <span class="highlight">자기</span>(재귀칭)가 똑똑한 줄 안다.</p>
+                            <div class="example-block">
+                                <p class="example-q">Q&A: '수사'와 '수 관형사' 구분하기</p>
+                                <div class="example-a">
+                                    <p>학생 <span class="interactive-word" data-analysis="수사 (뒤에 격조사 '이' 생략 가능)">다섯</span>이 왔다. → 조사가 붙을 수 있으므로 <span class="highlight">수사</span></p>
+                                    <p>학생 <span class="interactive-word" data-analysis="수 관형사 (뒤에 단위성 의존명사 '명' 수식)">다섯</span> 명이 왔다. → 뒤의 의존명사를 꾸미므로 <span class="highlight">수 관형사</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">용언 (동사, 형용사) 사례 탐구 ★</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p><b>동사/형용사 구분법:</b> <span class="highlight">현재형 -(느)ㄴ-</span>, <span class="highlight">명령형 -어라</span>, <span class="highlight">청유형 -자</span>, <span class="highlight">의도 -(으)려고</span>와 결합 가능하면 <span class="blank" data-answer="동사">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>, 불가능하면 <span class="blank" data-answer="형용사">[&nbsp;&nbsp;&nbsp;&nbsp;]</span>.</p>
+                            <div class="example-block">
+                                <p class="example-q">Q&A: '있다'의 품사는?</p>
+                                <div class="example-a">
+                                    <p>학교에 <span class="interactive-word" data-analysis="동사 ('있어라' 명령형 가능)">있어라</span>. → 머무는 동작이므로 <span class="highlight">동사</span></p>
+                                    <p>재미있는 책이 <span class="interactive-word" data-analysis="형용사 ('있는다' 현재형 불가)">있다</span>. → 존재하는 상태이므로 <span class="highlight">형용사</span></p>
+                                </div>
+                            </div>
+                            <p class="mt-4"><b>불규칙 활용:</b></p>
+                            <p class="ml-4"><b>'ㄷ' 불규칙:</b> 듣다 → <span class="highlight">들어</span> (어간 'ㄷ'이 'ㄹ'로 바뀜)</p>
+                            <p class="ml-4"><b>'ㅂ' 불규칙:</b> 돕다 → <span class="highlight">도와</span> (어간 'ㅂ'이 '오/우'로 바뀜)</p>
+                            <p class="ml-4"><b>'르' 불규칙:</b> 흐르다 → <span class="highlight">흘러</span> (어간 '르'가 'ㄹㄹ'로 바뀜)</p>
+                            <p class="ml-4"><b>'ㅎ' 불규칙:</b> 하얗다 → <span class="highlight">하얘</span> (어간 'ㅎ' 탈락, 어미 변화)</p>
+                        </div>
+                    </div>
+                `
+            },
+            'chapter4': {
+                title: '4. 단어의 형성',
+                content: `
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">단어의 구조: 단일어와 복합어</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p class="text-lg">단어는 구조에 따라 하나의 어근으로 이루어진 <span class="blank" data-answer="단일어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>와, 둘 이상의 형태소로 이루어진 <span class="blank" data-answer="복합어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>로 나뉜다.</p>
+                            <p class="mt-4"><b>복합어의 종류:</b></p>
+                             <ul class="list-disc pl-6 mt-2 space-y-2">
+                                <li><span class="blank" data-answer="파생어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 어근 + <span class="highlight">접사</span> (예: <span class="interactive-word" data-analysis="접두사(풋-)+어근(사과)">풋사과</span>, <span class="interactive-word" data-analysis="어근(지우-)+접미사(-개)">지우개</span>)</li>
+                                <li><span class="blank" data-answer="합성어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 어근 + <span class="highlight">어근</span> (예: <span class="interactive-word" data-analysis="어근(밤)+어근(낮)">밤낮</span>, <span class="interactive-word" data-analysis="어근(돌)+어근(다리)">돌다리</span>)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">합성어의 종류 ★</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p><b>1. 의미 관계에 따른 분류</b></p>
+                            <p class="ml-4"><b>대등 합성어:</b> 두 어근이 대등. (예: <span class="highlight">손발</span>, <span class="highlight">앞뒤</span>)</p>
+                            <p class="ml-4"><b>종속 합성어:</b> 한쪽이 다른 쪽을 수식. (예: <span class="highlight">돌다리</span>, <span class="highlight">책가방</span>)</p>
+                            <p class="ml-4"><b>융합 합성어:</b> 새로운 의미 생성. (예: <span class="highlight">밤낮</span>(→항상), <span class="highlight">춘추</span>(→나이))</p>
+                            <p class="mt-4"><b>2. 문장 구성 방식에 따른 분류 (매우 중요!)</b></p>
+                             <ul class="list-disc pl-6 mt-2 space-y-2">
+                                <li><span class="blank" data-answer="통사적 합성어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 우리말의 일반적인 단어 배열법과 <span class="highlight">일치</span>.</li>
+                                <li><span class="blank" data-answer="비통사적 합성어">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>: 일반적인 단어 배열법에서 <span class="highlight">벗어남</span>.</li>
+                            </ul>
+                            <div class="example-block">
+                                <p class="example-q">Q&A: 통사? 비통사?</p>
+                                <div class="example-a">
+                                    <p><span class="interactive-word" data-analysis="통사적 (관형사+명사)">새해</span>, <span class="interactive-word" data-analysis="통사적 (명사+명사)">밤낮</span>, <span class="interactive-word" data-analysis="통사적 (주어+서술어)">힘들다</span>, <span class="interactive-word" data-analysis="통사적 (용언+연결어미+용언)">돌아가다</span></p>
+                                    <p><span class="interactive-word" data-analysis="비통사적 (용언어간+명사)">덮밥</span>, <span class="interactive-word" data-analysis="비통사적 (부사+명사)">부슬비</span>, <span class="interactive-word" data-analysis="비통사적 (용언어간+용언어간)">검푸르다</span></p>
+                                    <p class="text-sm mt-2 text-red-600">※ 핵심: 용언 어간 뒤에 <span class="highlight">연결어미(-아/어, -게 등)나 관형사형 어미(-(으)ㄴ/는 등) 없이</span> 바로 다른 말이 오면 대부분 비통사적!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header flex justify-between items-center p-4 bg-white rounded-t-lg">
+                            <h3 class="text-xl font-bold text-blue-700">파생어와 품사 변화</h3>
+                            <i class="fas fa-chevron-down chevron transition-transform"></i>
+                        </div>
+                        <div class="card-body bg-white rounded-b-lg">
+                            <p>어근에 <span class="blank" data-answer="접미사">[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</span>가 붙을 때 품사가 바뀌기도 한다. (지배적 접사)</p>
+                            <div class="example-block">
+                                <p class="example-q">Q&A: 품사가 바뀐 파생어 찾기</p>
+                                <div class="example-a">
+                                    <p><b>명사 파생:</b> 울다(동사) → <span class="highlight">울음</span>(명사) / 달리다(동사) → <span class="highlight">달리기</span>(명사)</p>
+                                    <p><b>동사 파생:</b> 공부(명사) → <span class="highlight">공부하다</span>(동사)</p>
+                                    <p><b>형용사 파생:</b> 학생(명사) → <span class="highlight">학생답다</span>(형용사)</p>
+                                    <p><b>부사 파생:</b> 자연(명사) → <span class="highlight">자연히</span>(부사)</p>
+                                </div>
+                            </div>
+                             <div class="example-block">
+                                <p class="example-q">Q&A: 명사형 전성 어미 vs 명사 파생 접미사</p>
+                                <div class="example-a">
+                                    <p>빠르게 <span class="interactive-word" data-analysis="명사형 전성 어미 (서술 기능 O, 부사어 '빠르게'의 수식을 받음)">달리기</span>는 힘들다. → 품사는 여전히 <span class="highlight">동사</span></p>
+                                    <p>학교 <span class="interactive-word" data-analysis="명사 파생 접미사 (서술 기능 X, 관형어 '학교'의 수식을 받음)">달리기</span> 시합에 나갔다. → 품사가 <span class="highlight">명사</span>로 바뀜</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        const contentArea = document.getElementById('content-area');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const popup = document.getElementById('popup');
+
+        function renderContent(chapterKey) {
+            contentArea.innerHTML = `<h2 class="text-2xl font-bold mb-6 text-center">${learningData[chapterKey].title}</h2><div class="space-y-4">${learningData[chapterKey].content}</div>`;
+        }
+
+        function handleInteraction(e) {
+            const cardHeader = e.target.closest('.card-header');
+            if (cardHeader) {
+                cardHeader.parentElement.classList.toggle('open');
+            }
+
+            const blank = e.target.closest('.blank');
+            if (blank && !blank.classList.contains('revealed')) {
+                blank.textContent = blank.dataset.answer;
+                blank.classList.add('revealed');
+            }
+        }
+
+        function showPopup(target) {
+            popup.textContent = target.dataset.analysis;
+            const rect = target.getBoundingClientRect();
+            popup.style.display = 'block';
+            popup.style.left = `${rect.left + window.scrollX}px`;
+            popup.style.top = `${rect.bottom + window.scrollY + 5}px`;
+        }
+
+        function hidePopup() {
+            popup.style.display = 'none';
+        }
+
+        contentArea.addEventListener('click', handleInteraction);
+        
+        contentArea.addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('interactive-word')) {
+                showPopup(e.target);
+            }
+        });
+
+        contentArea.addEventListener('mouseout', (e) => {
+            if (e.target.classList.contains('interactive-word')) {
+                hidePopup();
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const chapterKey = link.dataset.chapter;
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                renderContent(chapterKey);
+            });
+        });
+
+        renderContent('chapter2');
+        
+        document.getElementById('test-link-btn').addEventListener('click', () => {
+            alert('학습을 완료하셨군요! 이제 실전 테스트를 만들어 드릴 차례입니다.');
+        });
+
+    </script>
+</body>
+</html>
