@@ -264,7 +264,8 @@
             let correctCount = 0;
             
             quizData.forEach((item, index) => {
-                const qItem = document.getElementById(`q-${tab}-${index}`);
+                // BUG FIX: The variable 'tab' was undefined. Changed to 'currentTab'.
+                const qItem = document.getElementById(`q-${currentTab}-${index}`);
                 const input = qItem.querySelector('.input-answer');
                 const feedback = qItem.querySelector('.result-feedback');
                 const userAnswer = input.value.trim().replace(/\s/g, '');
