@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배곧고1 문법 실전 테스트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #1d4ed8; /* blue-700 */
+            color: white;
+            font-weight: 700;
+        }
+        .question-item {
+            border-left: 4px solid #e5e7eb; /* gray-200 */
+            transition: border-color 0.3s ease;
+        }
+        .question-item.correct {
+            border-left-color: #22c55e; /* green-500 */
+        }
+        .question-item.incorrect {
+            border-left-color: #ef4444; /* red-500 */
+        }
+        .result-icon {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .correct .result-icon {
+            color: #22c55e;
+        }
+        .incorrect .result-icon {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-800">배곧고1 문법 실전 테스트</h1>
+            <p class="text-gray-600 mt-2">사례를 중심으로 구성된 단답형 초성 퀴즈입니다.</p>
+        </header>
+
+        <!-- Tab Buttons -->
+        <div id="tab-container" class="flex flex-wrap justify-center border-b-2 border-gray-200 mb-6">
+            <button class="tab-btn active text-lg py-3 px-6 bg-white rounded-t-lg border-gray-200 border-t border-l border-r -mb-px" data-tab="2">2. 단어와 형태소</button>
+            <button class="tab-btn text-lg py-3 px-6 bg-white rounded-t-lg border-gray-200 border-t border-l border-r -mb-px" data-tab="3">3. 단어의 품사</button>
+            <button class="tab-btn text-lg py-3 px-6 bg-white rounded-t-lg border-gray-200 border-t border-l border-r -mb-px" data-tab="4">4. 단어의 형성</button>
+        </div>
+
+        <!-- Quiz Content -->
+        <main id="quiz-content" class="bg-white p-6 rounded-lg shadow-md">
+            <!-- Test content will be dynamically inserted here -->
+        </main>
+
+        <!-- Action Buttons & Result -->
+        <footer class="text-center mt-8">
+            <button id="check-answers-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
+                답 확인하기
+            </button>
+            <div id="result-display" class="mt-6 text-2xl font-bold text-blue-800 hidden"></div>
+        </footer>
+    </div>
+
+    <script>
+        const quizzes = {
+            '2': [
+                { q: "뜻을 가진 가장 작은 말의 단위는?", hint: "ㅎㅌㅅ", a: "형태소" },
+                { q: "'하늘'처럼 홀로 쓰일 수 있는 형태소는?", hint: "ㅈㄹㅎㅌㅅ", a: "자립형태소" },
+                { q: "어미 '-다'처럼 다른 말에 기대어 쓰이는 형태소는?", hint: "ㅇㅈㅎㅌㅅ", a: "의존형태소" },
+                { q: "'하늘'처럼 실질적 의미를 나타내는 형태소는?", hint: "ㅅㅈㅎㅌㅅ", a: "실질형태소" },
+                { q: "조사 '가'처럼 문법적 의미를 나타내는 형태소는?", hint: "ㅎㅅㅎㅌㅅ", a: "형식형태소" },
+                { q: "모든 자립 형태소가 속하는 형태소의 종류는?", hint: "ㅅㅈㅎㅌㅅ", a: "실질형태소" },
+                { q: "의존 형태소 중 유일하게 실질 형태소에 속하는 것은?", hint: "ㅇㅇㅇㅇㄱ", a: "용언의어간" },
+                { q: "환경에 따라 모습이 달라지는 하나의 형태소를 무엇이라 하는가?", hint: "ㅇㅎㅌ", a: "이형태" },
+                { q: "주격조사 '이/가'는 무엇의 예시인가?", hint: "ㅇㅎㅌ", a: "이형태" },
+                { q: "연결어미 '-아/-어'가 모음조화에 따라 다르게 나타나는 것은 무엇의 예시인가?", hint: "ㅇㅎㅌ", a: "이형태" },
+                { q: "자립적으로 쓰이는 최소 단위로, 조사를 포함하는 개념은?", hint: "ㄷㅇ", a: "단어" },
+                { q: "자립할 수 없지만 단어로 인정되는 유일한 품사는?", hint: "ㅈㅅ", a: "조사" },
+                { q: "용언이 활용할 때 변하지 않는 부분은?", hint: "ㅇㄱ", a: "어간" },
+                { q: "용언이 활용할 때 변하는 부분은?", hint: "ㅇㅁ", a: "어미" },
+                { q: "단어에서 실질적 의미를 나타내는 중심 부분은?", hint: "ㅇㄱ", a: "어근" },
+                { q: "어근에 붙어 의미를 더하거나 문법 기능을 하는 부분은?", hint: "ㅈㅅ", a: "접사" },
+                { q: "'먹었다'의 형태소 분석: 먹 / 었 / 다. 여기서 '먹'은 무슨 형태소인가? (자립성)", hint: "ㅇㅈㅎㅌㅅ", a: "의존형태소" },
+                { q: "'먹었다'의 형태소 분석: 먹 / 었 / 다. 여기서 '먹'은 무슨 형태소인가? (의미)", hint: "ㅅㅈㅎㅌㅅ", a: "실질형태소" },
+                { q: "'먹었다'의 형태소 분석: 먹 / 었 / 다. 여기서 '었'은 무슨 형태소인가? (의미)", hint: "ㅎㅅㅎㅌㅅ", a: "형식형태소" },
+                { q: "'꽃이'에서 '꽃'과 '이'는 각각 단어인가?", hint: "ㄴ", a: "네" },
+                { q: "'피었다'에서 '피-'와 '-었-', '-다'는 쉽게 분리될 수 있는가?", hint: "ㅇㄴㅇ", a: "아니오" },
+                { q: "조사가 단어로 인정받는 가장 큰 이유는 앞말과의 높은 OOO 때문이다.", hint: "ㅂㄹㅅ", a: "분리성" },
+                { q: "'꽃만이'처럼 체언과 조사 사이에 다른 말이 끼어들 수 있는가?", hint: "ㅇ", a: "예" },
+                { q: "'먹고'의 어간은?", hint: "ㅁ", a: "먹" },
+                { q: "'예쁘니'의 어미는?", hint: "ㄴ", a: "니" },
+                { q: "'덮밥'의 어근은?", hint: "ㄷ, ㅂ", a: "덮, 밥" },
+                { q: "'치솟다'의 어근은?", hint: "ㅅ", a: "솟" },
+                { q: "'치솟다'의 접사는?", hint: "ㅊ", a: "치" },
+                { q: "'치솟다'의 어간은?", hint: "ㅊㅅ", a: "치솟" },
+                { q: "'맨손'의 어근은?", hint: "ㅅ", a: "손" },
+                { q: "'맨손'의 접사는?", hint: "ㅁ", a: "맨" },
+                { q: "'아버지가방에들어가신다'를 단어로 나누면 몇 개인가?", hint: "5ㄱ", a: "5개" },
+                { q: "'밭에 예쁜 꽃이 많이 피었다'를 단어로 나누면 몇 개인가?", hint: "7ㄱ", a: "7개" },
+                { q: "조사와 어미는 모두 OOOO소이다.", hint: "ㅇㅈㅎㅌㅅ", a: "의존형태소" },
+                { q: "'먹다'의 어근과 어간은 일치하는가?", hint: "ㅇ", a: "예" },
+                { q: "'새파랗다'의 어근은?", hint: "ㅍㄹ", a: "파랗" },
+                { q: "'새파랗다'의 어간은?", hint: "ㅅㅍㄹ", a: "새파랗" },
+                { q: "'잡히다'의 어간은?", hint: "ㅈㅎ", a: "잡히" },
+                { q: "'지우개'의 어근은?", hint: "ㅈㅇ", a: "지우" },
+                { q: "'지우개'의 접사는?", hint: "ㄱ", a: "개" },
+                { q: "'향기롭다'의 어근은?", hint: "ㅎㄱ", a: "향기" },
+                { q: "'공부하다'의 접사는?", hint: "ㅎ", a: "하" },
+                { q: "하나의 어근으로만 이루어진 단어는?", hint: "ㄷㅇㅇ", a: "단일어" },
+                { q: "둘 이상의 형태소로 이루어진 단어는?", hint: "ㅂㅎㅇ", a: "복합어" },
+                { q: "어근에 접사가 붙어 만들어진 단어는?", hint: "ㅍㅅㅇ", a: "파생어" },
+                { q: "어근과 어근이 결합하여 만들어진 단어는?", hint: "ㅎㅅㅇ", a: "합성어" },
+                { q: "'놀이터'의 직접 구성 요소는 '놀이'와 '-터'이다. '놀이터'는 무슨 어인가?", hint: "ㅎㅅㅇ", a: "합성어" },
+                { q: "'미닫이'의 직접 구성 요소는 '미닫-'과 '-이'이다. '미닫이'는 무슨 어인가?", hint: "ㅍㅅㅇ", a: "파생어" },
+                { q: "'살얼음판'은 궁극적으로 무슨 어에 속하는가?", hint: "ㅎㅅㅇ", a: "합성어" },
+                { q: "'목걸이'는 궁극적으로 무슨 어에 속하는가?", hint: "ㅍㅅㅇ", a: "파생어" },
+            ],
+            '3': [
+                { q: "품사를 분류하는 기준 3가지는 형태, 기능, 그리고 Oㅇ이다.", hint: "ㅇㅁ", a: "의미" },
+                { q: "형태가 변하는 단어인 '먹다, 예쁘다' 등은 OOO이다.", hint: "ㄱㅂㅇ", a: "가변어" },
+                { q: "형태가 변하지 않는 단어인 '하늘, 매우' 등은 OOO이다.", hint: "ㅂㅂㅇ", a: "불변어" },
+                { q: "문장에서 주체 기능을 하는 단어들을 묶어 Oㅇ이라고 한다.", hint: "ㅊㅇ", a: "체언" },
+                { q: "문장에서 서술어 기능을 하는 단어들을 묶어 Oㅇ이라고 한다.", hint: "ㅇㅇ", a: "용언" },
+                { q: "다른 말을 꾸며주는 기능을 하는 단어들을 묶어 OOO이라고 한다.", hint: "ㅅㅅㅇ", a: "수식언" },
+                { q: "문법적 관계를 나타내는 단어들을 묶어 OOO이라고 한다.", hint: "ㄱㄱㅇ", a: "관계언" },
+                { q: "독립적으로 쓰이는 단어들을 묶어 OOO이라고 한다.", hint: "ㄷㄹㅇ", a: "독립언" },
+                { q: "'백두산, 이순신'처럼 특정한 대상의 이름인 명사는?", hint: "ㄱㅇㅁㅅ", a: "고유명사" },
+                { q: "'것, 뿐, 데'처럼 관형어의 수식을 받아야만 쓰이는 명사는?", hint: "ㅇㅈㅁㅅ", a: "의존명사" },
+                { q: "'신발 한 켤레'에서 '켤레'의 품사는?", hint: "ㅇㅈㅁㅅ", a: "의존명사" },
+                { q: "'저 사람은 누구인가?'에서 '누구'는 무슨 칭 대명사인가?", hint: "ㅁㅈㅊ", a: "미지칭" },
+                { q: "'누구라도 할 수 있다'에서 '누구'는 무슨 칭 대명사인가?", hint: "ㅂㅈㅊ", a: "부정칭" },
+                { q: "'할머니께서는 당신의 사진을 보셨다'에서 '당신'은 무슨 칭 대명사인가?", hint: "ㅈㄱㅊ", a: "재귀칭" },
+                { q: "'사과 다섯'에서 '다섯'의 품사는?", hint: "ㅅㅅ", a: "수사" },
+                { q: "'사과 다섯 개'에서 '다섯'의 품사는?", hint: "ㅅㄱㅎㅅ", a: "수관형사" },
+                { q: "뒤에 조사가 결합할 수 있는 것은 수사인가, 수 관형사인가?", hint: "ㅅㅅ", a: "수사" },
+                { q: "현재 시제 선어말 어미 '-(느)ㄴ-'과 결합할 수 있는 용언은?", hint: "ㄷㅅ", a: "동사" },
+                { q: "명령형 어미 '-어라'와 결합할 수 없는 용언은?", hint: "ㅎㅇㅅ", a: "형용사" },
+                { q: "'그는 큰 집에 있는다'에서 '있는다'는 문법적으로 옳은 표현인가?", hint: "ㅇㄴㅇ", a: "아니오" },
+                { q: "'너는 교실에 조용히 있어라'에서 '있어라'의 품사는?", hint: "ㄷㅅ", a: "동사" },
+                { q: "'내게는 멋진 친구가 있다'에서 '있다'의 품사는?", hint: "ㅎㅇㅅ", a: "형용사" },
+                { q: "용언의 어간에 붙어 활용을 일으키는 문법 형태소는?", hint: "ㅇㅁ", a: "어미" },
+                { q: "문장을 끝맺는 기능을 하는 어미는?", hint: "ㅈㄱㅇㅁ", a: "종결어미" },
+                { q: "단어와 단어, 문장과 문장을 이어주는 어미는?", hint: "ㅇㄱㅇㅁ", a: "연결어미" },
+                { q: "용언의 성격을 다른 품사처럼 바꿔주는 어미는?", hint: "ㅈㅅㅇㅁ", a: "전성어미" },
+                { q: "'먹다'가 '먹어'로 활용하는 것은 무슨 활용인가?", hint: "ㄱㅊㅎㅇ", a: "규칙활용" },
+                { q: "'돕다'가 '도와'로 활용하는 것은 무슨 불규칙인가?", hint: "ㅂㅂㄱㅊ", a: "ㅂ불규칙" },
+                { q: "'듣다'가 '들어'로 활용하는 것은 무슨 불규칙인가?", hint: "ㄷㅂㄱㅊ", a: "ㄷ불규칙" },
+                { q: "'흐르다'가 '흘러'로 활용하는 것은 무슨 불규칙인가?", hint: "ㄹㅂㄱㅊ", a: "르불규칙" },
+                { q: "'하얗다'가 '하얘'로 활용하는 것은 무슨 불규칙인가?", hint: "ㅎㅂㄱㅊ", a: "ㅎ불규칙" },
+                { q: "'공부하다'가 '공부하여'로 활용하는 것은 무슨 불규칙인가?", hint: "ㅇㅂㄱㅊ", a: "여불규칙" },
+                { q: "체언을 꾸며주는 품사는?", hint: "ㄱㅎㅅ", a: "관형사" },
+                { q: "주로 용언을 꾸며주는 품사는?", hint: "ㅂㅅ", a: "부사" },
+                { q: "'새 책'에서 '새'의 품사는?", hint: "ㄱㅎㅅ", a: "관형사" },
+                { q: "'매우 예쁘다'에서 '매우'의 품사는?", hint: "ㅂㅅ", a: "부사" },
+                { q: "'과연, 설마'처럼 문장 전체를 꾸미는 부사는?", hint: "ㅁㅈㅂㅅ", a: "문장부사" },
+                { q: "앞말에 일정한 자격을 부여하는 조사는?", hint: "ㄱㅈㅅ", a: "격조사" },
+                { q: "앞말에 특별한 뜻을 더해주는 조사는?", hint: "ㅂㅈㅅ", a: "보조사" },
+                { q: "두 단어를 같은 자격으로 이어주는 조사는?", hint: "ㅈㅅㅈㅅ", a: "접속조사" },
+                { q: "'철수가'에서 '가'는 무슨 조사인가?", hint: "ㅈㄱㅈㅅ", a: "주격조사" },
+                { q: "'물이 얼음이 되다'에서 '이'는 무슨 조사인가?", hint: "ㅂㄱㅈㅅ", a: "보격조사" },
+                { q: "'너마저 떠나는구나'에서 '마저'는 무슨 조사인가?", hint: "ㅂㅈㅅ", a: "보조사" },
+                { q: "'너하고 나'에서 '하고'는 무슨 조사인가?", hint: "ㅈㅅㅈㅅ", a: "접속조사" },
+                { q: "체언, 부사, 어미 등 여러 곳에 붙을 수 있는 조사는?", hint: "ㅂㅈㅅ", a: "보조사" },
+                { q: "'빨리도 온다'에서 '도'는 OOO 뒤에 붙은 보조사이다.", hint: "ㅂㅅ", a: "부사" },
+                { q: "'아, 깜짝이야!'에서 '아'의 품사는?", hint: "ㄱㅌㅅ", a: "감탄사" },
+                { q: "'영수야, 이리 와'에서 '영수야'는 OOO에 해당한다.", hint: "ㄷㄹㅇ", a: "독립어" },
+                { q: "'길이 보존하자'에서 '길이'의 품사는?", hint: "ㅂㅅ", a: "부사" },
+                { q: "'탑의 길이'에서 '길이'의 품사는?", hint: "ㅁㅅ", a: "명사" },
+            ],
+            '4': [
+                { q: "'밤나무'처럼 어근과 어근이 결합한 단어는?", hint: "ㅎㅅㅇ", a: "합성어" },
+                { q: "'풋사과'처럼 어근에 접사가 결합한 단어는?", hint: "ㅍㅅㅇ", a: "파생어" },
+                { q: "어근 앞에 붙는 접사는?", hint: "ㅈㄷㅅ", a: "접두사" },
+                { q: "어근 뒤에 붙는 접사는?", hint: "ㅈㅁㅅ", a: "접미사" },
+                { q: "일반적으로 품사를 바꾸지 못하는 접사는?", hint: "ㅈㄷㅅ", a: "접두사" },
+                { q: "품사를 바꾸는 기능을 하는 접미사를 OOO 접미사라고 한다.", hint: "ㅈㅂㅈ", a: "지배적" },
+                { q: "우리말의 일반적인 문장 구성 방식과 일치하는 합성어는?", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "우리말의 일반적인 문장 구성 방식에서 벗어나는 합성어는?", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'새해'(관형사+명사)는 무슨 합성어인가?", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'힘들다'(주어+서술어)는 무슨 합성어인가?", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'돌아가다'(용언+연결어미+용언)는 무슨 합성어인가?", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'덮밥'(용언 어간+명사)은 무슨 합성어인가?", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'검푸르다'(용언 어간+용언 어간)는 무슨 합성어인가?", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'부슬비'(부사+명사)는 무슨 합성어인가?", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "용언 어간에 어미 없이 바로 다른 말이 오면 대부분 무슨 합성어인가?", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "의미 관계상, '손발'처럼 두 어근이 대등한 합성어는?", hint: "ㄷㄷㅎㅅㅇ", a: "대등합성어" },
+                { q: "의미 관계상, '돌다리'처럼 한 어근이 다른 어근을 꾸미는 합성어는?", hint: "ㅈㅅㅎㅅㅇ", a: "종속합성어" },
+                { q: "의미 관계상, '춘추(나이)'처럼 새로운 의미를 만드는 합성어는?", hint: "ㅇㅎㅎㅅㅇ", a: "융합합성어" },
+                { q: "'피땀'은 무슨 합성어인가? (의미 관계)", hint: "ㅇㅎㅎㅅㅇ", a: "융합합성어" },
+                { q: "'여닫다'는 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'첫사랑'은 무슨 합성어인가? (구성 방식)", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'뛰놀다'는 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'본받다'는 무슨 합성어인가? (구성 방식)", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'접칼'은 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'굶주리다'는 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'그만두다'는 무슨 합성어인가? (구성 방식)", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'날뛰다'는 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'빛나다'는 무슨 합성어인가? (구성 방식)", hint: "ㅌㅅㅈㅎㅅㅇ", a: "통사적합성어" },
+                { q: "'늦잠'은 무슨 합성어인가? (구성 방식)", hint: "ㅂㅌㅅㅈㅎㅅㅇ", a: "비통사적합성어" },
+                { q: "'새빨갛다'는 무슨 어인가?", hint: "ㅍㅅㅇ", a: "파생어" },
+                { q: "'새빨갛다'의 어근은?", hint: "ㅃㄱ", a: "빨갛" },
+                { q: "'새빨갛다'의 접사는?", hint: "ㅅ", a: "새" },
+                { q: "'군소리'에서 '군-'은 무슨 접사인가?", hint: "ㅈㄷㅅ", a: "접두사" },
+                { q: "'멋쟁이'에서 '-쟁이'는 무슨 접사인가?", hint: "ㅈㅁㅅ", a: "접미사" },
+                { q: "'지우개'에서 '-개'는 품사를 바꾸는 접미사인가?", hint: "ㅇ", a: "예" },
+                { q: "'웃음'에서 '-음'은 품사를 명사로 바꾸는 OOO OOO이다.", hint: "ㅁㅅㅍㅅㅈㅁㅅ", a: "명사파생접미사" },
+                { q: "'공부하다'에서 '-하-'는 품사를 동사로 바꾸는 OOO OOO이다.", hint: "ㄷㅅㅍㅅㅈㅁㅅ", a: "동사파생접미사" },
+                { q: "'학생답다'에서 '-답-'은 품사를 형용사로 바꾸는 OOO OOO이다.", hint: "ㅎㅇㅅㅍㅅㅈㅁㅅ", a: "형용사파생접미사" },
+                { q: "'깨끗이'에서 '-이'는 품사를 부사로 바꾸는 OOO OOO이다.", hint: "ㅂㅅㅍㅅㅈㅁㅅ", a: "부사파생접미사" },
+                { q: "'빠르게 달리기'에서 '달리기'의 품사는?", hint: "ㄷㅅ", a: "동사" },
+                { q: "'달리기 시합'에서 '달리기'의 품사는?", hint: "ㅁㅅ", a: "명사" },
+                { q: "서술성이 있고 부사어의 수식을 받는 '-(으)ㅁ/-기'는?", hint: "ㅁㅅㅎㅈㅅㅇㅁ", a: "명사형전성어미" },
+                { q: "서술성이 없고 관형어의 수식을 받는 '-(으)ㅁ/-기'는?", hint: "ㅁㅅㅍㅅㅈㅁㅅ", a: "명사파생접미사" },
+                { q: "'좋은 꿈을 꿈'에서 뒤의 '꿈'의 품사는?", hint: "ㅁㅅ", a: "명사" },
+                { q: "'좋은 꿈을 꿈'에서 앞의 '꿈'의 품사는?", hint: "ㅁㅅ", a: "명사" },
+                { q: "'잠'은 '자다'의 어간 '자-'에 접미사 O이 붙은 파생어이다.", hint: "ㅁ", a: "ㅁ" },
+                { q: "'울보'는 동사 '울다'에 접미사 '-보'가 붙은 OOOO이다.", hint: "ㅍㅅㅁㅅ", a: "파생명사" },
+                { q: "'출렁거리다'는 의태어 '출렁'에 접미사 OOO가 붙은 파생동사이다.", hint: "ㄱㄹ", a: "거리" },
+                { q: "'새롭다'는 명사 '새'에 접미사 O이 붙은 파생형용사이다.", hint: "ㄹ", a: "롭" },
+                { q: "'많이'는 형용사 '많다'에 접미사 O가 붙은 파생부사이다.", hint: "ㅇ", a: "이" },
+            ]
+        };
+
+        const tabContainer = document.getElementById('tab-container');
+        const quizContent = document.getElementById('quiz-content');
+        const checkBtn = document.getElementById('check-answers-btn');
+        const resultDisplay = document.getElementById('result-display');
+        let currentTab = '2';
+
+        function renderQuiz(tab) {
+            const quizData = quizzes[tab];
+            if (!quizData) return;
+
+            let html = `<ol class="space-y-6 list-decimal list-inside">`;
+            quizData.forEach((item, index) => {
+                html += `
+                    <li id="q-${tab}-${index}" class="question-item p-4 rounded-lg bg-gray-50">
+                        <p class="text-lg font-medium mb-2">${item.q}</p>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                            <span class="text-blue-600 font-semibold">(초성: ${item.hint})</span>
+                            <input type="text" class="input-answer flex-grow p-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" data-answer="${item.a}">
+                            <span class="result-feedback hidden ml-2"></span>
+                        </div>
+                    </li>
+                `;
+            });
+            html += `</ol>`;
+            quizContent.innerHTML = html;
+            resultDisplay.classList.add('hidden');
+            checkBtn.disabled = false;
+            checkBtn.innerText = '답 확인하기';
+        }
+
+        function checkAnswers() {
+            const quizData = quizzes[currentTab];
+            let correctCount = 0;
+            
+            quizData.forEach((item, index) => {
+                const qItem = document.getElementById(`q-${tab}-${index}`);
+                const input = qItem.querySelector('.input-answer');
+                const feedback = qItem.querySelector('.result-feedback');
+                const userAnswer = input.value.trim().replace(/\s/g, '');
+                const correctAnswer = item.a.replace(/\s/g, '');
+
+                feedback.classList.remove('hidden');
+
+                if (userAnswer === correctAnswer) {
+                    correctCount++;
+                    qItem.classList.remove('incorrect');
+                    qItem.classList.add('correct');
+                    feedback.innerHTML = `<span class="result-icon">✓</span> <span class="text-green-600 font-bold">정답!</span>`;
+                    input.classList.remove('border-red-400');
+                    input.classList.add('border-green-500');
+                } else {
+                    qItem.classList.remove('correct');
+                    qItem.classList.add('incorrect');
+                    feedback.innerHTML = `<span class="result-icon">✗</span> <span class="text-red-600 font-bold">오답</span> <span class="text-sm text-gray-600">(정답: ${item.a})</span>`;
+                    input.classList.remove('border-green-500');
+                    input.classList.add('border-red-400');
+                }
+                input.disabled = true;
+            });
+            
+            const totalQuestions = quizData.length;
+            const score = Math.round((correctCount / totalQuestions) * 100);
+            resultDisplay.innerHTML = `결과: ${totalQuestions}문제 중 ${correctCount}개 정답! (${score}점)`;
+            resultDisplay.classList.remove('hidden');
+            checkBtn.innerText = '채점 완료';
+            checkBtn.disabled = true;
+        }
+
+        tabContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-btn')) {
+                const tabNum = e.target.dataset.tab;
+                if (tabNum === currentTab) return;
+
+                currentTab = tabNum;
+                
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                renderQuiz(currentTab);
+            }
+        });
+
+        checkBtn.addEventListener('click', checkAnswers);
+
+        // Initial render
+        renderQuiz(currentTab);
+    </script>
+
+</body>
+</html>
