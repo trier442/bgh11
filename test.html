@@ -6,6 +6,7 @@
     <title>배곧고1 문법 실전 테스트</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
@@ -62,9 +63,14 @@
 
         <!-- Action Buttons & Result -->
         <footer class="text-center mt-8">
-            <button id="check-answers-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
-                답 확인하기
-            </button>
+            <div class="flex justify-center items-center gap-4 flex-wrap">
+                 <button id="home-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
+                    <i class="fas fa-home mr-2"></i>홈으로 돌아가기
+                </button>
+                <button id="check-answers-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105">
+                    답 확인하기
+                </button>
+            </div>
             <div id="result-display" class="mt-6 text-2xl font-bold text-blue-800 hidden"></div>
         </footer>
     </div>
@@ -233,6 +239,7 @@
         const quizContent = document.getElementById('quiz-content');
         const checkBtn = document.getElementById('check-answers-btn');
         const resultDisplay = document.getElementById('result-display');
+        const homeBtn = document.getElementById('home-btn');
         let currentTab = '2';
 
         function renderQuiz(tab) {
@@ -313,6 +320,10 @@
         });
 
         checkBtn.addEventListener('click', checkAnswers);
+        
+        homeBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
 
         // Initial render
         renderQuiz(currentTab);
