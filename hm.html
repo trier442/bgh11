@@ -1,475 +1,527 @@
-import React, { useState } from 'react';
-import { CheckCircle, XCircle, AlertCircle, BookOpen, RefreshCw, ChevronRight } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배곧고1 한글맞춤법 만점 목표 모의테스트1</title>
+    
+    <!-- React & ReactDOM (CDN) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (JSX 변환용 CDN) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS (스타일링 CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 폰트 설정 (선택사항) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
 
-export default function App() {
-  const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [showScore, setShowScore] = useState(false);
+    <div id="root"></div>
 
-  // 문제 데이터 (PDF에서 추출, 서술형 제외)
-  const questions = [
-    {
-      id: 3,
-      title: "문항 3",
-      question: "다음 <보기>의 문장 중 띄어쓰기가 올바른 문장의 개수는?",
-      boxContent: "ㄱ. 여기서부터는 혼자 가자.\nㄴ. 제2차 정기주주총회가 내일 이다.\nㄷ. 네가 꿈꾸는대로 모두 이루어질 거야.\nㄹ. 나무 한그루는 심을 수 있을까?\nㅁ. 보이기는 커녕 들리지 않는다.",
-      options: ["1개", "2개", "3개", "4개", "5개"],
-      correctAnswer: 0, // 1개
-      explanation: "정답: ① (1개 - ㄱ)\n\n[해설]\nㄱ. '여기서부터는'의 조사들은 앞말에 붙여 쓰는 것이 맞습니다.\nㄴ. '이다'는 서술격 조사이므로 앞말에 붙여 써야 합니다. (내일이다)\nㄷ. '대로'는 관형어 뒤에 오면 의존 명사이므로 띄어 써야 합니다. (꿈꾸는 대로)\nㄹ. '한 그루'의 '그루'는 단위를 나타내는 명사이므로 띄어 써야 합니다. (나무 한 그루)\nㅁ. '는커녕'은 보조사이므로 앞말에 붙여 써야 합니다. (보이기는커녕)"
-    },
-    {
-      id: 4,
-      title: "문항 4",
-      question: "'조사의 띄어쓰기'에 대해 이해한 내용으로 적절하지 않은 것은?",
-      options: [
-        "조사는 일반적인 단어와 달리 앞말에 붙여 써야 한다.",
-        "'너 밖에 없어.'와 '너밖에 없어.'는 띄어쓰기로 인해 의미가 다르게 전달된다.",
-        "'비가 오기는커녕 구름조차 없다.'에 쓰인 조사는 모두 세 개다.",
-        "'비가 오기는커녕 구름조차 없다.'에 쓰인 조사는 모두 체언 뒤에 결합하였다.",
-        "'나에게만이라도 말해라'에는 둘 이상의 조사가 연속되어 앞말에 붙여 쓴 단어가 있다."
-      ],
-      correctAnswer: 3, // 4번
-      explanation: "정답: ④\n\n[해설]\n'비가 오기는커녕'에서 '는커녕'은 명사형 어미 '-기' 뒤에 결합하였습니다. 조사가 항상 체언(명사, 대명사, 수사) 뒤에만 결합하는 것은 아닙니다. 어미 뒤에도 붙을 수 있습니다."
-    },
-    {
-      id: 5,
-      title: "문항 5",
-      question: "한글 맞춤법의 원리에 대해 이해한 내용으로 적절하지 않은 것은?",
-      options: [
-        "한글 맞춤법은 표준어를 대상으로 하는 표기법이다.",
-        "한글 맞춤법 제1항은 한글이 표음 문자임을 고려한 부분이 있다.",
-        "원활한 소통을 위해서 표준어를 어법에 맞게 적어야 할 때도 있다.",
-        "각 형태소의 원형을 밝혀 적는 것은 어법에 맞게 적는 방법이다.",
-        "표준어를 소리 나는 대로 표기하는 것은 한글 맞춤법에 어긋난다."
-      ],
-      correctAnswer: 4, // 5번
-      explanation: "정답: ⑤\n\n[해설]\n한글 맞춤법 제1항은 '표준어를 소리대로 적되, 어법에 맞도록 함을 원칙으로 한다'입니다. 따라서 표준어를 소리 나는 대로 표기하는 것 자체가 맞춤법에 어긋나는 것은 아닙니다. (예: 구름, 달리다 등)"
-    },
-    {
-      id: 6,
-      title: "문항 6",
-      question: "<보기>에 적용된 한글 맞춤법의 기본 원리에 대해 이해한 것으로 적절한 것은?",
-      boxContent: "<보기>\n꽃[꼳] 꽃이[꼬치] 꽃만[꼰만]",
-      options: [
-        "표기가 쉽지만 뜻을 파악하는 데에 어려움이 있는 표기 원칙을 적용하였다.",
-        "뜻을 쉽게 파악하기 위해 어간과 어미를 구분하여 적었다.",
-        "각 형태소의 본 모양을 밝혀 적어 독서의 능률을 높였다.",
-        "표음 문자인 한글의 특성을 고려하여 표준어의 원형을 밝혀 적었다.",
-        "발음과 표기가 일치하지 않아 뜻을 파악하는 데 어려움이 있는 표기 원칙을 적용하였다."
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n<보기>의 '꽃'은 발음이 환경에 따라 [꼳], [꼬치], [꼰만] 등으로 달라지지만, '꽃'이라는 형태소의 본 모양을 밝혀 적음으로써 의미를 쉽게 파악할 수 있게 하여 독서의 능률을 높인 것입니다."
-    },
-    {
-      id: 7,
-      title: "문항 7",
-      question: "한글 맞춤법 원칙(소리대로 적는 것 vs 어법에 맞도록 적는 것)에 따라 <보기>의 단어들을 파악한 것으로 적절한 것은?",
-      boxContent: "<보기>\n달리다, 얼음, 망설이다, 구름, 젊다",
-      options: [
-        "'달리다'는 어간과 어미의 형태를 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
-        "'얼음'은 어간과 어미의 형태를 밝혀 적었으므로 '소리대로'에 따라 표기한 예이다.",
-        "'망설이다'는 어근과 접사의 형태를 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
-        "'구름'은 각 형태소의 원형을 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
-        "'젊다'는 어간의 형태를 고정하여 적었으므로 '소리대로'에 따라 표기한 예이다."
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n'망설이다'는 어근 '망설'에 접사 '-이다'가 결합한 단어로 원형을 밝혀 적었으므로 '어법에 맞도록' 적은 예입니다.\n① '달리다'는 소리대로 적은 예\n② '얼음'은 원형을 밝혀 적었으므로 '어법에 맞도록'의 예\n④ '구름'은 소리대로 적은 예\n⑤ '젊다'는 원형을 밝혀 적었으므로 '어법에 맞도록'의 예"
-    },
-    {
-      id: 8,
-      title: "문항 8",
-      question: "다음 <보기>의 문장을 적절하게 띄어 썼을 때 어절의 수가 같은 것은?",
-      boxContent: "<보기> 그사람은부끄러운듯여전히 고개를 숙인채말했다.",
-      options: [
-        "콩심은데콩나고팥심은데팥난다.",
-        "사냥가는데총을 안가지고 가는 것같다.",
-        "그일은내힘으로도저히 감당할수가없다.",
-        "버스가떠난지 한참이 지나서야그가돌아왔다.",
-        "될대로되라는 듯그는 어깨를 펴고큰목소리로말했다."
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n<보기>를 바르게 띄어 쓰면 '그 사람은 부끄러운 듯 여전히 고개를 숙인 채 말했다.'로 총 9어절입니다.\n① 10어절 (콩 심은 데 콩 나고 팥 심은 데 팥 난다)\n② 9어절 (사냥 가는 데 총을 안 가지고 가는 것 같다)\n③ 8어절 (그 일은 내 힘으로 도저히 감당할 수가 없다)\n④ 7어절 (버스가 떠난 지 한참이 지나서야 그가 돌아왔다)\n⑤ 10어절 (될 대로 되라는 듯 그는 어깨를 펴고 큰 목소리로 말했다)"
-    },
-    {
-      id: 10,
-      title: "문항 10",
-      question: "<보기>의 밑줄 친 부분들을 통해 띄어쓰기 규정에 대해 이해한 내용으로 적절하지 않은 것은?",
-      boxContent: "<보기>\n㉠ 제십회 학생회의가 시작되었다.\n㉡ 꽃 피는 봄, 고향 생각 절로 나네.\n㉢ 오늘 하루만이라도 내 부탁 좀 들어줘.\n㉣ 계획대로 하다면 원하는 대로 이루어질 거야.\n㉤ 나는 고양이 한 마리와 강아지 두 마리를 키운다.",
-      options: [
-        "㉠: 순서를 나타내는 경우나 숫자와 어울려 쓰이는 경우에는 의존명사도 붙여 쓸 수 있군.",
-        "㉡: 조사는 앞말에 붙여 써야 하는군.",
-        "㉢: 조사는 둘 이상이 연속될 때에도 모두 앞말에 붙여 쓰는군.",
-        "㉣: 조사는 앞말에 붙여 쓰는 반면, 의존명사는 띄어 쓰는군.",
-        "㉤: 단위를 나타내는 명사는 앞말과 띄어 쓰는군."
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n㉡('꽃 피는 봄, 고향 생각 절로 나네')의 밑줄 친 부분에는 조사가 쓰이지 않았습니다. ('절로'는 '저절로'의 준말인 부사입니다). 따라서 이를 통해 조사의 띄어쓰기를 이해한다는 설명은 적절하지 않습니다."
-    },
-    {
-      id: 11,
-      title: "문항 11",
-      question: "밑줄 친 말 중 '어간에 이나 음/-ㅁ이 붙어서 명사로 된 것'에 해당하지 않는 것은?",
-      options: [
-        "그 말은 굳이 너에게 하지 않겠다.",
-        "지난번 소문에 대해서는 익히 알고 있다.",
-        "이번에는 도전에 꼭 성공하리라 마음을 먹었다.",
-        "참된 앎을 추구하는 것이 학자의 사명이다.",
-        "죽음은 인간 모두에게 공평하게 일어나는 일이다."
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n'마음'은 하나의 형태소로 이루어진 단어입니다. 어간에 '-음'이 붙어서 파생된 명사가 아닙니다.\n① 굳이 (굳- + -이)\n② 익히 (익- + -히)\n④ 앎 (알- + -ㅁ)\n⑤ 죽음 (죽- + -음)"
-    },
-    {
-      id: 12,
-      title: "문항 12",
-      question: "한글 맞춤법 규정 중 '어간에 -이/-음 이외의 모음으로 시작된 접미사가 붙어서 원형을 밝혀 적지 않는 경우'에 해당하는 단어가 들어 있는 문장은?",
-      options: [
-        "새로운 건물의 공사가 마감 단계에 다다랐다.",
-        "점심 식사를 과하게 했더니 졸음이 쏟아진다.",
-        "우리 집 거실에는 미닫이 형식의 문이 달려 있다.",
-        "나는 재미있는 이야기로 친구들을 웃음 짓게 했다.",
-        "그는 우리의 믿음을 저버리고 약속을 지키지 않았다."
-      ],
-      correctAnswer: 0, // 1번
-      explanation: "정답: ①\n\n[해설]\n'마감'은 '막-(다)'에 접미사 '-암'이 붙은 말로, '-이'나 '-음' 이외의 모음으로 시작된 접미사가 붙었기 때문에 어간의 원형을 밝혀 적지 않은 예입니다.\n나머지는 모두 '-이'나 '-음'이 붙어 원형을 밝혀 적은 경우입니다."
-    },
-    {
-      id: 13,
-      title: "문항 13",
-      question: "밑줄 친 말 중에서, 한글 맞춤법 규정에 따라 적절히 표기한 것은?",
-      options: [
-        "우리는 모두 인간다운 삶을 누려야 한다.",
-        "나에게 볼일이 있으니 잠시만 기다려 줘.",
-        "흩날리던 꽃잎들이 바람에 살아졌다.",
-        "활짝 열린 문 사이로 고양이가 냉큼 드러간다.",
-        "사건에 관계된 모든 사람들이 드디어 들어났다."
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n'있으니'는 어간 '있-'과 어미 '-으니'를 구별하여 적은 올바른 표기입니다.\n③ '살아졌다' -> '사라졌다' (앞말의 본뜻이 멀어짐)\n④ '드러간다' -> '들어간다' (앞말의 본뜻이 유지됨)\n⑤ '들어났다' -> '드러났다' (앞말의 본뜻이 멀어짐)"
-    },
-    {
-      id: 15,
-      title: "문항 15",
-      question: "한글 맞춤법 제5항(된소리 되기)을 고려할 때, 표기가 적절하지 않은 단어가 포함된 문장은?",
-      options: [
-        "어머니께서 꽃처럼 함빡 웃으신다.",
-        "아이들이 법석을 피우며 청소를 한다.",
-        "잠자리가 바뀌니 잠이 잘 오지 않는다.",
-        "그는 기쁜 마음으로 친구의 수상을 축하해 주었다.",
-        "늦잠을 잔 영주가 눈꼽을 떼며 침대 밖으로 나왔다."
-      ],
-      correctAnswer: 4, // 5번
-      explanation: "정답: ⑤\n\n[해설]\n'눈꼽'은 틀린 표기이며 '눈곱'이 맞습니다. '눈곱'은 '눈'과 '곱'이 결합한 합성어인데, 뚜렷한 까닭 없이 나는 된소리가 아니므로(혹은 사이시옷 현상 등과 관련이 없으므로) 원래 형태대로 적습니다."
-    },
-    {
-      id: 16,
-      title: "문항 16",
-      question: "다음은 단어의 표기 원칙을 <단어 : 규정 : 원리> 형태로 연결한 것입니다. 적절하게 연결된 것은?",
-      boxContent: "<보기 예시>\n듬뿍 : 제5항 2('ㅁ' 받침 뒤) : 표음주의(소리대로)",
-      options: [
-        "깜짝 : 제5항 2 : 표의주의",
-        "딱지 : 제5항 1 : 표음주의",
-        "씁쓸 : 제5항 '다만'(같은 음절 겹침) : 표음주의",
-        "폭발 : 제5항 '다만' : 표음주의",
-        "훨씬 : 제5항 2 : 표의주의"
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n'씁쓸'은 'ㄱ, ㅂ' 받침 뒤에서 나는 된소리이지만, 비슷한 음절이 겹쳐 나는 경우('다만' 조항)이므로 된소리로 적습니다. 이는 소리 나는 대로 적는 '표음주의'를 따른 것입니다."
-    },
-    {
-      id: 17,
-      title: "문항 17",
-      question: "다음 밑줄 친 부분에 대해 탐구한 내용으로 적절한 것은?",
-      options: [
-        "시중에 공급되는 통화량이 많아지면... -> '량'은 모음 뒤에 오면 'ㄹ'이 탈락하므로 '통화양'으로 수정한다.",
-        "선수단은 입국장에 모습을 들어냈다. -> 앞말의 본뜻이 유지되므로 '드러냈다'로 수정한다.",
-        "날씨가 좋은 날에는 바람을 쐐어야 해요. -> 어간이 '쐬'로 끝나는 말에 '-어'가 결합하면 축약되어 '쐐'가 되므로 '쐐야'로 수정한다.",
-        "아버지와 아이는 법석을 피우며... -> 'ㅅ'이 된소리로 소리 나기 때문에 '법썩'으로 수정한다.",
-        "계속 가든지 여기서 있든지... -> 선택을 나타내는 경우는 '던'으로 표기하므로 '던지'로 수정한다."
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n'쐬어야'는 '쐬-' + '-어야'인데, '쐬어'가 줄면 '쐐'가 됩니다. 따라서 '쐐어야'는 '쐬어어야'처럼 중복된 꼴이 되므로 자연스럽게 축약하여 '쐐야'(혹은 '쐬어야')로 쓰는 것이 맞습니다. 문맥상 '바람을 쐐야 해요'가 적절한 수정입니다.\n① 통화량(O) - 한자어 '량'은 첫머리가 아니면 본음대로 적음\n② 드러냈다(O) - 본뜻이 멀어졌으므로 소리대로 적음 (탐구 내용 설명이 반대로 됨)\n④ 법석(O) - 'ㄱ,ㅂ' 받침 뒤 된소리는 적지 않음\n⑤ 든지(O) - 선택은 '든지'"
-    },
-    {
-      id: 19,
-      title: "문항 19",
-      question: "<보기>의 밑줄 친 단어들을 분석한 내용으로 적절하지 않은 것은?",
-      boxContent: "<보기>\n㉠ 그림과 [같이]\n㉡ 의자 [높이]는\n㉢ 모니터 [높이]를\n㉣ 발바닥[부터]\n㉤ 모니터를 [마주] 보며",
-      options: [
-        "㉠에 사용된 접미사는 비교적 여러 어간에 결합할 수 있다.",
-        "㉡과 ㉢은 모두 용언의 어간에 '-이'가 붙어 명사가 된 경우로 어간의 원형을 밝혀 적어야 한다.",
-        "㉢은 '같'에 '-이'가 결합한 말이고, ㉣은 '붙'에 '어'가 결합한 말이다.",
-        "㉣과 ㉤은 모두 어간의 원형을 밝히지 않고 소리대로 적은 것이다.",
-        "㉤에 사용된 접미사는 결합하는 어간이 제약되어 있다."
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n㉡('높이'는 - 명사)은 맞지만, ㉢이 문맥상 '높이를'로 쓰여 명사가 맞습니다. 그러나 해설에 따르면 지문의 ㉢ 위치나 설명이 '같이(부사)'와 혼동되었을 수 있습니다. 정답 해설에 따르면 '하나는 명사, 하나는 부사'인 경우를 설명하고 있습니다. 문맥상 2번 선지가 틀린 설명(둘 다 명사라고 했으나 하나가 부사이거나, 혹은 원형을 밝히는 설명이 잘못됨)으로 제시되었습니다."
-    },
-    {
-      id: 20,
-      title: "문항 20",
-      question: "<보기>의 단어들을 분석한 내용으로 옳은 것은?",
-      boxContent: "<보기>\n㉠ 높이(부사) / 높이(명사)\n㉡ 먹이 / 많이\n㉢ 믿음 / 익히\n㉣ 굳이 / 마중\n㉤ 비로소 / 웃음",
-      options: [
-        "㉠의 앞 '높이'는 명사, 뒤 '높이'는 부사이다.",
-        "㉡의 '먹이'는 부사, '많이'는 명사이다.",
-        "㉢의 '믿음'은 부사, '익히'는 명사이다.",
-        "㉣의 '굳이'는 부사(원형 밝힘), '마중'은 명사(원형 안 밝힘)이다.",
-        "㉤의 '비로소'는 명사, '웃음'은 부사이다."
-      ],
-      correctAnswer: 3, // 4번
-      explanation: "정답: ④\n\n[해설]\n④ '굳이'는 '굳-' + '-이'(부사 파생)로 원형을 밝혀 적고, '마중'은 '맞-' + '-웅'(접미사)으로 원형을 밝히지 않고 소리대로 적은 단어입니다. 이것이 올바른 분석입니다."
-    },
-    {
-      id: 21,
-      title: "문항 21",
-      question: "한글 맞춤법 제19항(원형 밝힘)과 붙임(원형 안 밝힘)에 따라 단어들을 분류했을 때 적절한 묶음은?",
-      boxContent: "<분류 기준>\n(가): 원형을 밝혀 적는 것 (-이, -음/-ㅁ 등)\n(나): 원형을 밝혀 적지 않는 것 (그 외 모음 접미사 등)",
-      options: [
-        "(가): 목걸이, 웃음, 죽음 / (나): 굳이, 많이",
-        "(가): 굳이, 많이, 익히 / (나): 너무, 무덤, 주검",
-        "(가): 굳이, 나날이 / (나): 익히",
-        "(가): 너무, 무덤, 주검 / (나): 지붕",
-        "(가): 목걸이, 바둑이 / (나): 웃음, 죽음"
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n(가) 굳이(굳-이), 많이(많-이), 익히(익-히) -> '-이', '-히'가 붙어 부사가 된 것으로 원형을 밝혀 적음.\n(나) 너무(넘-우), 무덤(묻-엄), 주검(죽-엄) -> '-우', '-엄' 등 다른 모음 접미사가 붙어 원형을 밝히지 않음."
-    },
-    {
-      id: 22,
-      title: "문항 22",
-      question: "다음 중 띄어쓰기가 옳지 않은 문장은?",
-      options: [
-        "옛날에 타던 차보다 좀 더 큰 이 새 차를 그는 훨씬 좋아했다.",
-        "연주가 끝나기 전에 강당 안에는 우레 같은 박수 소리가 터져 나왔다.",
-        "콩심은데콩나는것처럼 그 집안은 대대로 망나니가 나올 수밖에 없다.",
-        "옷 한 벌에 구십이만 원 하는 양복을 사장 및 사원들 모두가 과감하게 구입했다.",
-        "열무 삼십 단을 이고 시장에 간 우리 엄마 안 오시네."
-      ],
-      correctAnswer: 2, // 3번
-      explanation: "정답: ③\n\n[해설]\n'콩심은데콩나는것처럼'은 띄어쓰기가 전혀 되어 있지 않습니다.\n올바른 표기: '콩 심은 데 콩 나는 것처럼'\n('데'는 의존명사라 띄고, '처럼'은 조사라 붙여 씀)"
-    },
-    {
-      id: 23,
-      title: "문항 23",
-      question: "된소리 되기 규정과 관련하여 <보기>의 단어들을 설명한 것으로 옳은 것은?",
-      boxContent: "<보기> 거꾸로, 싹뚝, 줄넘기, 짭짤하게, 엉뚱한",
-      options: [
-        "'거꾸로'는 비슷한 음절이 겹쳐 나는 경우이므로 '꺼꾸로'로 수정해야 한다.",
-        "'싹뚝'은 'ㄱ' 받침 뒤에서 된소리가 나는 경우이므로 '싹둑'으로 수정해야 한다.",
-        "'줄넘기'는 'ㅁ' 받침 뒤에서 된소리가 나는 경우이므로 '줄넘끼'로 수정해야 한다.",
-        "'짭짤하게'는 'ㅂ' 받침 뒤에서 된소리가 나는 경우이므로 '짭잘하게'로 수정해야 한다.",
-        "'엉뚱한'은 모음 사이에서 된소리가 나는 경우이므로 '엉둥한'으로 수정해야 한다."
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n'싹뚝'은 [싹뚝]으로 소리 나지만, 'ㄱ' 받침 뒤에서 나는 된소리는 같은 음절이나 비슷한 음절이 겹쳐 나는 경우가 아니면 된소리로 적지 않는다는 규정(제5항 다만)에 따라 '싹둑'으로 적어야 합니다."
-    },
-    {
-      id: 24,
-      title: "문항 24",
-      question: "다음 중 표기가 적절하지 않은 단어가 포함된 문장은?",
-      options: [
-        "그의 손재주는 단연 으뜸이다.",
-        "아침부터 법석을 피우며 청소를 했다.",
-        "감기를 앓고 났더니 얼굴이 해쓱해졌다.",
-        "요즘 들어 어머니의 한숨이 부쩍 늘었다.",
-        "새벽녘 꽃은 산뜻한 이슬을 담북 머금고 있다."
-      ],
-      correctAnswer: 4, // 5번
-      explanation: "정답: ⑤\n\n[해설]\n'담북'은 틀린 표기이며 '담뿍'이 맞습니다. 한글 맞춤법 제5항에 따라 'ㅁ' 받침 뒤에서 나는 된소리는 된소리로 적어야 합니다."
-    },
-    {
-      id: 25,
-      title: "문항 25",
-      question: "다음 시 구절을 맞춤법 규정에 맞게 적절하게 띄어 쓴 것은?",
-      boxContent: "안오시네, 해는시든지오래 // 나는 찬밥처럼방에 담겨",
-      options: [
-        "안오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
-        "안 오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
-        "안 오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에담겨",
-        "안오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
-        "안오시네, 해는시든지 오래 // 나는 찬밥처럼 방에 담겨"
-      ],
-      correctAnswer: 1, // 2번
-      explanation: "정답: ②\n\n[해설]\n- '안 오시네': 부정 부사 '안'은 띄어 씁니다.\n- '시든지': '지'는 시간의 경과를 나타내는 의존 명사이므로 띄어 씁니다.\n- '찬밥처럼': '처럼'은 조사이므로 붙여 씁니다.\n- '방에': 조사는 붙여 씁니다."
-    }
-  ];
+    <script type="text/babel">
+        const { useState } = React;
 
-  const handleOptionChange = (questionId, optionIndex) => {
-    if (submitted) return;
-    setAnswers({
-      ...answers,
-      [questionId]: optionIndex
-    });
-  };
+        // 아이콘 컴포넌트 (Lucide 아이콘을 SVG로 직접 구현)
+        const CheckCircle = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        );
+        const XCircle = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        );
+        const AlertCircle = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        );
+        const BookOpen = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        );
+        const RefreshCw = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        );
 
-  const calculateScore = () => {
-    let correctCount = 0;
-    questions.forEach(q => {
-      if (answers[q.id] === q.correctAnswer) {
-        correctCount++;
-      }
-    });
-    return Math.round((correctCount / questions.length) * 100);
-  };
+        function App() {
+            const [answers, setAnswers] = useState({});
+            const [submitted, setSubmitted] = useState(false);
+            const [showScore, setShowScore] = useState(false);
 
-  const handleSubmit = () => {
-    if (Object.keys(answers).length < questions.length) {
-      if (!window.confirm("아직 풀지 않은 문제가 있습니다. 그래도 제출하시겠습니까?")) {
-        return;
-      }
-    }
-    setSubmitted(true);
-    setShowScore(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+            // 문제 데이터 (PDF에서 추출, 서술형 제외)
+            const questions = [
+                {
+                id: 3,
+                title: "문항 3",
+                question: "다음 <보기>의 문장 중 띄어쓰기가 올바른 문장의 개수는?",
+                boxContent: "ㄱ. 여기서부터는 혼자 가자.\nㄴ. 제2차 정기주주총회가 내일 이다.\nㄷ. 네가 꿈꾸는대로 모두 이루어질 거야.\nㄹ. 나무 한그루는 심을 수 있을까?\nㅁ. 보이기는 커녕 들리지 않는다.",
+                options: ["1개", "2개", "3개", "4개", "5개"],
+                correctAnswer: 0, // 1개
+                explanation: "정답: ① (1개 - ㄱ)\n\n[해설]\nㄱ. '여기서부터는'의 조사들은 앞말에 붙여 쓰는 것이 맞습니다.\nㄴ. '이다'는 서술격 조사이므로 앞말에 붙여 써야 합니다. (내일이다)\nㄷ. '대로'는 관형어 뒤에 오면 의존 명사이므로 띄어 써야 합니다. (꿈꾸는 대로)\nㄹ. '한 그루'의 '그루'는 단위를 나타내는 명사이므로 띄어 써야 합니다. (나무 한 그루)\nㅁ. '는커녕'은 보조사이므로 앞말에 붙여 써야 합니다. (보이기는커녕)"
+                },
+                {
+                id: 4,
+                title: "문항 4",
+                question: "'조사의 띄어쓰기'에 대해 이해한 내용으로 적절하지 않은 것은?",
+                options: [
+                    "조사는 일반적인 단어와 달리 앞말에 붙여 써야 한다.",
+                    "'너 밖에 없어.'와 '너밖에 없어.'는 띄어쓰기로 인해 의미가 다르게 전달된다.",
+                    "'비가 오기는커녕 구름조차 없다.'에 쓰인 조사는 모두 세 개다.",
+                    "'비가 오기는커녕 구름조차 없다.'에 쓰인 조사는 모두 체언 뒤에 결합하였다.",
+                    "'나에게만이라도 말해라'에는 둘 이상의 조사가 연속되어 앞말에 붙여 쓴 단어가 있다."
+                ],
+                correctAnswer: 3, // 4번
+                explanation: "정답: ④\n\n[해설]\n'비가 오기는커녕'에서 '는커녕'은 명사형 어미 '-기' 뒤에 결합하였습니다. 조사가 항상 체언(명사, 대명사, 수사) 뒤에만 결합하는 것은 아닙니다. 어미 뒤에도 붙을 수 있습니다."
+                },
+                {
+                id: 5,
+                title: "문항 5",
+                question: "한글 맞춤법의 원리에 대해 이해한 내용으로 적절하지 않은 것은?",
+                options: [
+                    "한글 맞춤법은 표준어를 대상으로 하는 표기법이다.",
+                    "한글 맞춤법 제1항은 한글이 표음 문자임을 고려한 부분이 있다.",
+                    "원활한 소통을 위해서 표준어를 어법에 맞게 적어야 할 때도 있다.",
+                    "각 형태소의 원형을 밝혀 적는 것은 어법에 맞게 적는 방법이다.",
+                    "표준어를 소리 나는 대로 표기하는 것은 한글 맞춤법에 어긋난다."
+                ],
+                correctAnswer: 4, // 5번
+                explanation: "정답: ⑤\n\n[해설]\n한글 맞춤법 제1항은 '표준어를 소리대로 적되, 어법에 맞도록 함을 원칙으로 한다'입니다. 따라서 표준어를 소리 나는 대로 표기하는 것 자체가 맞춤법에 어긋나는 것은 아닙니다. (예: 구름, 달리다 등)"
+                },
+                {
+                id: 6,
+                title: "문항 6",
+                question: "<보기>에 적용된 한글 맞춤법의 기본 원리에 대해 이해한 것으로 적절한 것은?",
+                boxContent: "<보기>\n꽃[꼳] 꽃이[꼬치] 꽃만[꼰만]",
+                options: [
+                    "표기가 쉽지만 뜻을 파악하는 데에 어려움이 있는 표기 원칙을 적용하였다.",
+                    "뜻을 쉽게 파악하기 위해 어간과 어미를 구분하여 적었다.",
+                    "각 형태소의 본 모양을 밝혀 적어 독서의 능률을 높였다.",
+                    "표음 문자인 한글의 특성을 고려하여 표준어의 원형을 밝혀 적었다.",
+                    "발음과 표기가 일치하지 않아 뜻을 파악하는 데 어려움이 있는 표기 원칙을 적용하였다."
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n<보기>의 '꽃'은 발음이 환경에 따라 [꼳], [꼬치], [꼰만] 등으로 달라지지만, '꽃'이라는 형태소의 본 모양을 밝혀 적음으로써 의미를 쉽게 파악할 수 있게 하여 독서의 능률을 높인 것입니다."
+                },
+                {
+                id: 7,
+                title: "문항 7",
+                question: "한글 맞춤법 원칙(소리대로 적는 것 vs 어법에 맞도록 적는 것)에 따라 <보기>의 단어들을 파악한 것으로 적절한 것은?",
+                boxContent: "<보기>\n달리다, 얼음, 망설이다, 구름, 젊다",
+                options: [
+                    "'달리다'는 어간과 어미의 형태를 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
+                    "'얼음'은 어간과 어미의 형태를 밝혀 적었으므로 '소리대로'에 따라 표기한 예이다.",
+                    "'망설이다'는 어근과 접사의 형태를 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
+                    "'구름'은 각 형태소의 원형을 밝혀 적었으므로 '어법에 맞도록'에 따라 표기한 예이다.",
+                    "'젊다'는 어간의 형태를 고정하여 적었으므로 '소리대로'에 따라 표기한 예이다."
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n'망설이다'는 어근 '망설'에 접사 '-이다'가 결합한 단어로 원형을 밝혀 적었으므로 '어법에 맞도록' 적은 예입니다.\n① '달리다'는 소리대로 적은 예\n② '얼음'은 원형을 밝혀 적었으므로 '어법에 맞도록'의 예\n④ '구름'은 소리대로 적은 예\n⑤ '젊다'는 원형을 밝혀 적었으므로 '어법에 맞도록'의 예"
+                },
+                {
+                id: 8,
+                title: "문항 8",
+                question: "다음 <보기>의 문장을 적절하게 띄어 썼을 때 어절의 수가 같은 것은?",
+                boxContent: "<보기> 그사람은부끄러운듯여전히 고개를 숙인채말했다.",
+                options: [
+                    "콩심은데콩나고팥심은데팥난다.",
+                    "사냥가는데총을 안가지고 가는 것같다.",
+                    "그일은내힘으로도저히 감당할수가없다.",
+                    "버스가떠난지 한참이 지나서야그가돌아왔다.",
+                    "될대로되라는 듯그는 어깨를 펴고큰목소리로말했다."
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n<보기>를 바르게 띄어 쓰면 '그 사람은 부끄러운 듯 여전히 고개를 숙인 채 말했다.'로 총 9어절입니다.\n① 10어절 (콩 심은 데 콩 나고 팥 심은 데 팥 난다)\n② 9어절 (사냥 가는 데 총을 안 가지고 가는 것 같다)\n③ 8어절 (그 일은 내 힘으로 도저히 감당할 수가 없다)\n④ 7어절 (버스가 떠난 지 한참이 지나서야 그가 돌아왔다)\n⑤ 10어절 (될 대로 되라는 듯 그는 어깨를 펴고 큰 목소리로 말했다)"
+                },
+                {
+                id: 10,
+                title: "문항 10",
+                question: "<보기>의 밑줄 친 부분들을 통해 띄어쓰기 규정에 대해 이해한 내용으로 적절하지 않은 것은?",
+                boxContent: "<보기>\n㉠ 제십회 학생회의가 시작되었다.\n㉡ 꽃 피는 봄, 고향 생각 절로 나네.\n㉢ 오늘 하루만이라도 내 부탁 좀 들어줘.\n㉣ 계획대로 하다면 원하는 대로 이루어질 거야.\n㉤ 나는 고양이 한 마리와 강아지 두 마리를 키운다.",
+                options: [
+                    "㉠: 순서를 나타내는 경우나 숫자와 어울려 쓰이는 경우에는 의존명사도 붙여 쓸 수 있군.",
+                    "㉡: 조사는 앞말에 붙여 써야 하는군.",
+                    "㉢: 조사는 둘 이상이 연속될 때에도 모두 앞말에 붙여 쓰는군.",
+                    "㉣: 조사는 앞말에 붙여 쓰는 반면, 의존명사는 띄어 쓰는군.",
+                    "㉤: 단위를 나타내는 명사는 앞말과 띄어 쓰는군."
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n㉡('꽃 피는 봄, 고향 생각 절로 나네')의 밑줄 친 부분에는 조사가 쓰이지 않았습니다. ('절로'는 '저절로'의 준말인 부사입니다). 따라서 이를 통해 조사의 띄어쓰기를 이해한다는 설명은 적절하지 않습니다."
+                },
+                {
+                id: 11,
+                title: "문항 11",
+                question: "밑줄 친 말 중 '어간에 이나 음/-ㅁ이 붙어서 명사로 된 것'에 해당하지 않는 것은?",
+                options: [
+                    "그 말은 굳이 너에게 하지 않겠다.",
+                    "지난번 소문에 대해서는 익히 알고 있다.",
+                    "이번에는 도전에 꼭 성공하리라 마음을 먹었다.",
+                    "참된 앎을 추구하는 것이 학자의 사명이다.",
+                    "죽음은 인간 모두에게 공평하게 일어나는 일이다."
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n'마음'은 하나의 형태소로 이루어진 단어입니다. 어간에 '-음'이 붙어서 파생된 명사가 아닙니다.\n① 굳이 (굳- + -이)\n② 익히 (익- + -히)\n④ 앎 (알- + -ㅁ)\n⑤ 죽음 (죽- + -음)"
+                },
+                {
+                id: 12,
+                title: "문항 12",
+                question: "한글 맞춤법 규정 중 '어간에 -이/-음 이외의 모음으로 시작된 접미사가 붙어서 원형을 밝혀 적지 않는 경우'에 해당하는 단어가 들어 있는 문장은?",
+                options: [
+                    "새로운 건물의 공사가 마감 단계에 다다랐다.",
+                    "점심 식사를 과하게 했더니 졸음이 쏟아진다.",
+                    "우리 집 거실에는 미닫이 형식의 문이 달려 있다.",
+                    "나는 재미있는 이야기로 친구들을 웃음 짓게 했다.",
+                    "그는 우리의 믿음을 저버리고 약속을 지키지 않았다."
+                ],
+                correctAnswer: 0, // 1번
+                explanation: "정답: ①\n\n[해설]\n'마감'은 '막-(다)'에 접미사 '-암'이 붙은 말로, '-이'나 '-음' 이외의 모음으로 시작된 접미사가 붙었기 때문에 어간의 원형을 밝혀 적지 않은 예입니다.\n나머지는 모두 '-이'나 '-음'이 붙어 원형을 밝혀 적은 경우입니다."
+                },
+                {
+                id: 13,
+                title: "문항 13",
+                question: "밑줄 친 말 중에서, 한글 맞춤법 규정에 따라 적절히 표기한 것은?",
+                options: [
+                    "우리는 모두 인간다운 삶을 누려야 한다.",
+                    "나에게 볼일이 있으니 잠시만 기다려 줘.",
+                    "흩날리던 꽃잎들이 바람에 살아졌다.",
+                    "활짝 열린 문 사이로 고양이가 냉큼 드러간다.",
+                    "사건에 관계된 모든 사람들이 드디어 들어났다."
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n'있으니'는 어간 '있-'과 어미 '-으니'를 구별하여 적은 올바른 표기입니다.\n③ '살아졌다' -> '사라졌다' (앞말의 본뜻이 멀어짐)\n④ '드러간다' -> '들어간다' (앞말의 본뜻이 유지됨)\n⑤ '들어났다' -> '드러났다' (앞말의 본뜻이 멀어짐)"
+                },
+                {
+                id: 15,
+                title: "문항 15",
+                question: "한글 맞춤법 제5항(된소리 되기)을 고려할 때, 표기가 적절하지 않은 단어가 포함된 문장은?",
+                options: [
+                    "어머니께서 꽃처럼 함빡 웃으신다.",
+                    "아이들이 법석을 피우며 청소를 한다.",
+                    "잠자리가 바뀌니 잠이 잘 오지 않는다.",
+                    "그는 기쁜 마음으로 친구의 수상을 축하해 주었다.",
+                    "늦잠을 잔 영주가 눈꼽을 떼며 침대 밖으로 나왔다."
+                ],
+                correctAnswer: 4, // 5번
+                explanation: "정답: ⑤\n\n[해설]\n'눈꼽'은 틀린 표기이며 '눈곱'이 맞습니다. '눈곱'은 '눈'과 '곱'이 결합한 합성어인데, 뚜렷한 까닭 없이 나는 된소리가 아니므로(혹은 사이시옷 현상 등과 관련이 없으므로) 원래 형태대로 적습니다."
+                },
+                {
+                id: 16,
+                title: "문항 16",
+                question: "다음은 단어의 표기 원칙을 <단어 : 규정 : 원리> 형태로 연결한 것입니다. 적절하게 연결된 것은?",
+                boxContent: "<보기 예시>\n듬뿍 : 제5항 2('ㅁ' 받침 뒤) : 표음주의(소리대로)",
+                options: [
+                    "깜짝 : 제5항 2 : 표의주의",
+                    "딱지 : 제5항 1 : 표음주의",
+                    "씁쓸 : 제5항 '다만'(같은 음절 겹침) : 표음주의",
+                    "폭발 : 제5항 '다만' : 표음주의",
+                    "훨씬 : 제5항 2 : 표의주의"
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n'씁쓸'은 'ㄱ, ㅂ' 받침 뒤에서 나는 된소리이지만, 비슷한 음절이 겹쳐 나는 경우('다만' 조항)이므로 된소리로 적습니다. 이는 소리 나는 대로 적는 '표음주의'를 따른 것입니다."
+                },
+                {
+                id: 17,
+                title: "문항 17",
+                question: "다음 밑줄 친 부분에 대해 탐구한 내용으로 적절한 것은?",
+                options: [
+                    "시중에 공급되는 통화량이 많아지면... -> '량'은 모음 뒤에 오면 'ㄹ'이 탈락하므로 '통화양'으로 수정한다.",
+                    "선수단은 입국장에 모습을 들어냈다. -> 앞말의 본뜻이 유지되므로 '드러냈다'로 수정한다.",
+                    "날씨가 좋은 날에는 바람을 쐐어야 해요. -> 어간이 '쐬'로 끝나는 말에 '-어'가 결합하면 축약되어 '쐐'가 되므로 '쐐야'로 수정한다.",
+                    "아버지와 아이는 법석을 피우며... -> 'ㅅ'이 된소리로 소리 나기 때문에 '법썩'으로 수정한다.",
+                    "계속 가든지 여기서 있든지... -> 선택을 나타내는 경우는 '던'으로 표기하므로 '던지'로 수정한다."
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n'쐬어야'는 '쐬-' + '-어야'인데, '쐬어'가 줄면 '쐐'가 됩니다. 따라서 '쐐어야'는 '쐬어어야'처럼 중복된 꼴이 되므로 자연스럽게 축약하여 '쐐야'(혹은 '쐬어야')로 쓰는 것이 맞습니다. 문맥상 '바람을 쐐야 해요'가 적절한 수정입니다.\n① 통화량(O) - 한자어 '량'은 첫머리가 아니면 본음대로 적음\n② 드러냈다(O) - 본뜻이 멀어졌으므로 소리대로 적음 (탐구 내용 설명이 반대로 됨)\n④ 법석(O) - 'ㄱ,ㅂ' 받침 뒤 된소리는 적지 않음\n⑤ 든지(O) - 선택은 '든지'"
+                },
+                {
+                id: 19,
+                title: "문항 19",
+                question: "<보기>의 밑줄 친 단어들을 분석한 내용으로 적절하지 않은 것은?",
+                boxContent: "<보기>\n㉠ 그림과 [같이]\n㉡ 의자 [높이]는\n㉢ 모니터 [높이]를\n㉣ 발바닥[부터]\n㉤ 모니터를 [마주] 보며",
+                options: [
+                    "㉠에 사용된 접미사는 비교적 여러 어간에 결합할 수 있다.",
+                    "㉡과 ㉢은 모두 용언의 어간에 '-이'가 붙어 명사가 된 경우로 어간의 원형을 밝혀 적어야 한다.",
+                    "㉢은 '같'에 '-이'가 결합한 말이고, ㉣은 '붙'에 '어'가 결합한 말이다.",
+                    "㉣과 ㉤은 모두 어간의 원형을 밝히지 않고 소리대로 적은 것이다.",
+                    "㉤에 사용된 접미사는 결합하는 어간이 제약되어 있다."
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n㉡('높이'는 - 명사)은 맞지만, ㉢이 문맥상 '높이를'로 쓰여 명사가 맞습니다. 그러나 해설에 따르면 지문의 ㉢ 위치나 설명이 '같이(부사)'와 혼동되었을 수 있습니다. 정답 해설에 따르면 '하나는 명사, 하나는 부사'인 경우를 설명하고 있습니다. 문맥상 2번 선지가 틀린 설명(둘 다 명사라고 했으나 하나가 부사이거나, 혹은 원형을 밝히는 설명이 잘못됨)으로 제시되었습니다."
+                },
+                {
+                id: 20,
+                title: "문항 20",
+                question: "<보기>의 단어들을 분석한 내용으로 옳은 것은?",
+                boxContent: "<보기>\n㉠ 높이(부사) / 높이(명사)\n㉡ 먹이 / 많이\n㉢ 믿음 / 익히\n㉣ 굳이 / 마중\n㉤ 비로소 / 웃음",
+                options: [
+                    "㉠의 앞 '높이'는 명사, 뒤 '높이'는 부사이다.",
+                    "㉡의 '먹이'는 부사, '많이'는 명사이다.",
+                    "㉢의 '믿음'은 부사, '익히'는 명사이다.",
+                    "㉣의 '굳이'는 부사(원형 밝힘), '마중'은 명사(원형 안 밝힘)이다.",
+                    "㉤의 '비로소'는 명사, '웃음'은 부사이다."
+                ],
+                correctAnswer: 3, // 4번
+                explanation: "정답: ④\n\n[해설]\n④ '굳이'는 '굳-' + '-이'(부사 파생)로 원형을 밝혀 적고, '마중'은 '맞-' + '-웅'(접미사)으로 원형을 밝히지 않고 소리대로 적은 단어입니다. 이것이 올바른 분석입니다."
+                },
+                {
+                id: 21,
+                title: "문항 21",
+                question: "한글 맞춤법 제19항(원형 밝힘)과 붙임(원형 안 밝힘)에 따라 단어들을 분류했을 때 적절한 묶음은?",
+                boxContent: "<분류 기준>\n(가): 원형을 밝혀 적는 것 (-이, -음/-ㅁ 등)\n(나): 원형을 밝혀 적지 않는 것 (그 외 모음 접미사 등)",
+                options: [
+                    "(가): 목걸이, 웃음, 죽음 / (나): 굳이, 많이",
+                    "(가): 굳이, 많이, 익히 / (나): 너무, 무덤, 주검",
+                    "(가): 굳이, 나날이 / (나): 익히",
+                    "(가): 너무, 무덤, 주검 / (나): 지붕",
+                    "(가): 목걸이, 바둑이 / (나): 웃음, 죽음"
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n(가) 굳이(굳-이), 많이(많-이), 익히(익-히) -> '-이', '-히'가 붙어 부사가 된 것으로 원형을 밝혀 적음.\n(나) 너무(넘-우), 무덤(묻-엄), 주검(죽-엄) -> '-우', '-엄' 등 다른 모음 접미사가 붙어 원형을 밝히지 않음."
+                },
+                {
+                id: 22,
+                title: "문항 22",
+                question: "다음 중 띄어쓰기가 옳지 않은 문장은?",
+                options: [
+                    "옛날에 타던 차보다 좀 더 큰 이 새 차를 그는 훨씬 좋아했다.",
+                    "연주가 끝나기 전에 강당 안에는 우레 같은 박수 소리가 터져 나왔다.",
+                    "콩심은데콩나는것처럼 그 집안은 대대로 망나니가 나올 수밖에 없다.",
+                    "옷 한 벌에 구십이만 원 하는 양복을 사장 및 사원들 모두가 과감하게 구입했다.",
+                    "열무 삼십 단을 이고 시장에 간 우리 엄마 안 오시네."
+                ],
+                correctAnswer: 2, // 3번
+                explanation: "정답: ③\n\n[해설]\n'콩심은데콩나는것처럼'은 띄어쓰기가 전혀 되어 있지 않습니다.\n올바른 표기: '콩 심은 데 콩 나는 것처럼'\n('데'는 의존명사라 띄고, '처럼'은 조사라 붙여 씀)"
+                },
+                {
+                id: 23,
+                title: "문항 23",
+                question: "된소리 되기 규정과 관련하여 <보기>의 단어들을 설명한 것으로 옳은 것은?",
+                boxContent: "<보기> 거꾸로, 싹뚝, 줄넘기, 짭짤하게, 엉뚱한",
+                options: [
+                    "'거꾸로'는 비슷한 음절이 겹쳐 나는 경우이므로 '꺼꾸로'로 수정해야 한다.",
+                    "'싹뚝'은 'ㄱ' 받침 뒤에서 된소리가 나는 경우이므로 '싹둑'으로 수정해야 한다.",
+                    "'줄넘기'는 'ㅁ' 받침 뒤에서 된소리가 나는 경우이므로 '줄넘끼'로 수정해야 한다.",
+                    "'짭짤하게'는 'ㅂ' 받침 뒤에서 된소리가 나는 경우이므로 '짭잘하게'로 수정해야 한다.",
+                    "'엉뚱한'은 모음 사이에서 된소리가 나는 경우이므로 '엉둥한'으로 수정해야 한다."
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n'싹뚝'은 [싹뚝]으로 소리 나지만, 'ㄱ' 받침 뒤에서 나는 된소리는 같은 음절이나 비슷한 음절이 겹쳐 나는 경우가 아니면 된소리로 적지 않는다는 규정(제5항 다만)에 따라 '싹둑'으로 적어야 합니다."
+                },
+                {
+                id: 24,
+                title: "문항 24",
+                question: "다음 중 표기가 적절하지 않은 단어가 포함된 문장은?",
+                options: [
+                    "그의 손재주는 단연 으뜸이다.",
+                    "아침부터 법석을 피우며 청소를 했다.",
+                    "감기를 앓고 났더니 얼굴이 해쓱해졌다.",
+                    "요즘 들어 어머니의 한숨이 부쩍 늘었다.",
+                    "새벽녘 꽃은 산뜻한 이슬을 담북 머금고 있다."
+                ],
+                correctAnswer: 4, // 5번
+                explanation: "정답: ⑤\n\n[해설]\n'담북'은 틀린 표기이며 '담뿍'이 맞습니다. 한글 맞춤법 제5항에 따라 'ㅁ' 받침 뒤에서 나는 된소리는 된소리로 적어야 합니다."
+                },
+                {
+                id: 25,
+                title: "문항 25",
+                question: "다음 시 구절을 맞춤법 규정에 맞게 적절하게 띄어 쓴 것은?",
+                boxContent: "안오시네, 해는시든지오래 // 나는 찬밥처럼방에 담겨",
+                options: [
+                    "안오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
+                    "안 오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
+                    "안 오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에담겨",
+                    "안오시네, 해는 시든지 오래 // 나는 찬밥처럼 방에 담겨",
+                    "안오시네, 해는시든지 오래 // 나는 찬밥처럼 방에 담겨"
+                ],
+                correctAnswer: 1, // 2번
+                explanation: "정답: ②\n\n[해설]\n- '안 오시네': 부정 부사 '안'은 띄어 씁니다.\n- '시든지': '지'는 시간의 경과를 나타내는 의존 명사이므로 띄어 씁니다.\n- '찬밥처럼': '처럼'은 조사이므로 붙여 씁니다.\n- '방에': 조사는 붙여 씁니다."
+                }
+            ];
 
-  const handleRetry = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setShowScore(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+            const handleOptionChange = (questionId, optionIndex) => {
+                if (submitted) return;
+                setAnswers({
+                ...answers,
+                [questionId]: optionIndex
+                });
+            };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans text-gray-800">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <header className="bg-white rounded-xl shadow-sm p-6 mb-8 border-b-4 border-blue-500">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">배곧고1 한글맞춤법 만점 목표 모의테스트1</h1>
-              <p className="text-gray-500 flex items-center gap-2">
-                <BookOpen size={18} />
-                고등 공통국어 (천재 김수학)
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-gray-400">총 문항 수</div>
-              <div className="text-xl font-bold text-blue-600">{questions.length}문제</div>
-            </div>
-          </div>
-        </header>
+            const calculateScore = () => {
+                let correctCount = 0;
+                questions.forEach(q => {
+                if (answers[q.id] === q.correctAnswer) {
+                    correctCount++;
+                }
+                });
+                return Math.round((correctCount / questions.length) * 100);
+            };
 
-        {/* Score Card */}
-        {showScore && (
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-8 text-center animate-fade-in border border-blue-100">
-            <h2 className="text-gray-500 text-lg mb-2">나의 점수는</h2>
-            <div className="text-5xl font-extrabold text-blue-600 mb-4">
-              {calculateScore()} <span className="text-2xl text-gray-400">/ 100</span>
-            </div>
-            <p className="text-gray-600 mb-6">
-              {calculateScore() === 100 ? "완벽합니다! 맞춤법 마스터시네요! 🎉" : 
-               calculateScore() >= 80 ? "훌륭해요! 조금만 더 다듬으면 완벽해질 거예요. 👍" : 
-               "틀린 문제를 확인하고 다시 도전해보세요! 💪"}
-            </p>
-            <button 
-              onClick={handleRetry}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              <RefreshCw size={20} />
-              다시 풀기
-            </button>
-          </div>
-        )}
+            const handleSubmit = () => {
+                if (Object.keys(answers).length < questions.length) {
+                if (!window.confirm("아직 풀지 않은 문제가 있습니다. 그래도 제출하시겠습니까?")) {
+                    return;
+                }
+                }
+                setSubmitted(true);
+                setShowScore(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
 
-        {/* Questions List */}
-        <div className="space-y-6">
-          {questions.map((q, index) => {
-            const isCorrect = answers[q.id] === q.correctAnswer;
-            const isWrong = submitted && !isCorrect;
-            
+            const handleRetry = () => {
+                setAnswers({});
+                setSubmitted(false);
+                setShowScore(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
             return (
-              <div 
-                key={q.id} 
-                className={`bg-white rounded-xl shadow-sm border p-6 transition-all duration-300 ${
-                  isWrong ? 'border-red-300 ring-1 ring-red-100' : 
-                  (submitted && isCorrect) ? 'border-green-300 ring-1 ring-green-100' : 'border-gray-200'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-bold">
-                      문제 {index + 1}
-                    </span>
-                    {submitted && (
-                      isCorrect ? 
-                      <span className="flex items-center text-green-600 text-sm font-bold bg-green-50 px-2 py-1 rounded"><CheckCircle size={16} className="mr-1"/> 정답</span> : 
-                      <span className="flex items-center text-red-500 text-sm font-bold bg-red-50 px-2 py-1 rounded"><XCircle size={16} className="mr-1"/> 오답</span>
-                    )}
-                  </div>
-                </div>
-
-                <h3 className="text-lg font-medium text-gray-900 mb-4 leading-relaxed whitespace-pre-line">
-                  {q.question}
-                </h3>
-
-                {q.boxContent && (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 font-medium text-gray-700 whitespace-pre-wrap">
-                    {q.boxContent}
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {q.options.map((option, optIndex) => (
-                    <label 
-                      key={optIndex} 
-                      className={`flex items-start p-3 rounded-lg cursor-pointer border transition-all ${
-                        answers[q.id] === optIndex 
-                          ? 'bg-blue-50 border-blue-200 text-blue-800' 
-                          : 'hover:bg-gray-50 border-transparent hover:border-gray-200'
-                      } ${submitted && optIndex === q.correctAnswer ? 'bg-green-50 border-green-200 !text-green-800 font-medium' : ''}
-                      ${submitted && answers[q.id] === optIndex && answers[q.id] !== q.correctAnswer ? 'bg-red-50 border-red-200 !text-red-800' : ''}`}
-                    >
-                      <div className="flex items-center h-6 mr-3">
-                        <input
-                          type="radio"
-                          name={`question-${q.id}`}
-                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
-                          checked={answers[q.id] === optIndex}
-                          onChange={() => handleOptionChange(q.id, optIndex)}
-                          disabled={submitted}
-                        />
-                      </div>
-                      <span className="text-[15px] leading-6">{option}</span>
-                    </label>
-                  ))}
-                </div>
-
-                {/* Explanation */}
-                {submitted && !isCorrect && (
-                  <div className="mt-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg animate-fade-in">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
-                      <div>
-                        <h4 className="text-red-800 font-bold mb-1">오답 풀이</h4>
-                        <div className="text-red-700 text-sm whitespace-pre-wrap leading-relaxed">
-                          {q.explanation}
+                <div className="min-h-screen py-8 px-4 font-sans text-gray-800">
+                <div className="max-w-3xl mx-auto">
+                    {/* Header */}
+                    <header className="bg-white rounded-xl shadow-sm p-6 mb-8 border-b-4 border-blue-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">배곧고1 한글맞춤법 만점 목표 모의테스트1</h1>
+                        <p className="text-gray-500 flex items-center gap-2">
+                            <BookOpen size={18} />
+                            고등 공통국어 (천재 김수학)
+                        </p>
                         </div>
-                      </div>
+                        <div className="text-right">
+                        <div className="text-sm text-gray-400">총 문항 수</div>
+                        <div className="text-xl font-bold text-blue-600">{questions.length}문제</div>
+                        </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                    </header>
 
-        {/* Submit Button */}
-        {!submitted && (
-          <div className="mt-8 text-center pb-12">
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-12 py-4 rounded-xl text-lg font-bold shadow-lg hover:bg-blue-700 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
-            >
-              제출하고 채점하기
-            </button>
-            <p className="mt-4 text-gray-500 text-sm">
-              * 모든 문제를 풀고 제출해주세요.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+                    {/* Score Card */}
+                    {showScore && (
+                    <div className="bg-white rounded-xl shadow-lg p-8 mb-8 text-center animate-fade-in border border-blue-100">
+                        <h2 className="text-gray-500 text-lg mb-2">나의 점수는</h2>
+                        <div className="text-5xl font-extrabold text-blue-600 mb-4">
+                        {calculateScore()} <span className="text-2xl text-gray-400">/ 100</span>
+                        </div>
+                        <p className="text-gray-600 mb-6">
+                        {calculateScore() === 100 ? "완벽합니다! 맞춤법 마스터시네요! 🎉" : 
+                        calculateScore() >= 80 ? "훌륭해요! 조금만 더 다듬으면 완벽해질 거예요. 👍" : 
+                        "틀린 문제를 확인하고 다시 도전해보세요! 💪"}
+                        </p>
+                        <button 
+                        onClick={handleRetry}
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                        <RefreshCw size={20} />
+                        다시 풀기
+                        </button>
+                    </div>
+                    )}
+
+                    {/* Questions List */}
+                    <div className="space-y-6">
+                    {questions.map((q, index) => {
+                        const isCorrect = answers[q.id] === q.correctAnswer;
+                        const isWrong = submitted && !isCorrect;
+                        
+                        return (
+                        <div 
+                            key={q.id} 
+                            className={`bg-white rounded-xl shadow-sm border p-6 transition-all duration-300 ${
+                            isWrong ? 'border-red-300 ring-1 ring-red-100' : 
+                            (submitted && isCorrect) ? 'border-green-300 ring-1 ring-green-100' : 'border-gray-200'
+                            }`}
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-bold">
+                                문제 {index + 1}
+                                </span>
+                                {submitted && (
+                                isCorrect ? 
+                                <span className="flex items-center text-green-600 text-sm font-bold bg-green-50 px-2 py-1 rounded"><CheckCircle size={16} className="mr-1"/> 정답</span> : 
+                                <span className="flex items-center text-red-500 text-sm font-bold bg-red-50 px-2 py-1 rounded"><XCircle size={16} className="mr-1"/> 오답</span>
+                                )}
+                            </div>
+                            </div>
+
+                            <h3 className="text-lg font-medium text-gray-900 mb-4 leading-relaxed whitespace-pre-line">
+                            {q.question}
+                            </h3>
+
+                            {q.boxContent && (
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 font-medium text-gray-700 whitespace-pre-wrap">
+                                {q.boxContent}
+                            </div>
+                            )}
+
+                            <div className="space-y-3">
+                            {q.options.map((option, optIndex) => (
+                                <label 
+                                key={optIndex} 
+                                className={`flex items-start p-3 rounded-lg cursor-pointer border transition-all ${
+                                    answers[q.id] === optIndex 
+                                    ? 'bg-blue-50 border-blue-200 text-blue-800' 
+                                    : 'hover:bg-gray-50 border-transparent hover:border-gray-200'
+                                } ${submitted && optIndex === q.correctAnswer ? 'bg-green-50 border-green-200 !text-green-800 font-medium' : ''}
+                                ${submitted && answers[q.id] === optIndex && answers[q.id] !== q.correctAnswer ? 'bg-red-50 border-red-200 !text-red-800' : ''}`}
+                                >
+                                <div className="flex items-center h-6 mr-3">
+                                    <input
+                                    type="radio"
+                                    name={`question-${q.id}`}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
+                                    checked={answers[q.id] === optIndex}
+                                    onChange={() => handleOptionChange(q.id, optIndex)}
+                                    disabled={submitted}
+                                    />
+                                </div>
+                                <span className="text-[15px] leading-6">{option}</span>
+                                </label>
+                            ))}
+                            </div>
+
+                            {/* Explanation */}
+                            {submitted && !isCorrect && (
+                            <div className="mt-6 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg animate-fade-in">
+                                <div className="flex items-start gap-3">
+                                <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+                                <div>
+                                    <h4 className="text-red-800 font-bold mb-1">오답 풀이</h4>
+                                    <div className="text-red-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                    {q.explanation}
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            )}
+                        </div>
+                        );
+                    })}
+                    </div>
+
+                    {/* Submit Button */}
+                    {!submitted && (
+                    <div className="mt-8 text-center pb-12">
+                        <button
+                        onClick={handleSubmit}
+                        className="bg-blue-600 text-white px-12 py-4 rounded-xl text-lg font-bold shadow-lg hover:bg-blue-700 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                        >
+                        제출하고 채점하기
+                        </button>
+                        <p className="mt-4 text-gray-500 text-sm">
+                        * 모든 문제를 풀고 제출해주세요.
+                        </p>
+                    </div>
+                    )}
+                </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
