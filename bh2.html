@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고1 한글맞춤법 격파하기</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            background-color: #34495e;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            border: 1px solid #e67e22; /* 주황색 테두리 */
+        }
+
+        h1 {
+            color: #e67e22;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            word-break: keep-all;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #ecf0f1;
+        }
+
+        .warning-box {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: none; /* 카톡일 때만 보임 */
+        }
+
+        input[type="text"] {
+            padding: 15px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            border: 2px solid #555;
+            width: 70%;
+            margin-bottom: 10px;
+            font-family: 'Jua', sans-serif;
+            text-align: center;
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #e67e22;
+        }
+
+        button {
+            background-color: #d35400;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            transition: transform 0.1s, background-color 0.2s;
+            width: 100%;
+            max-width: 250px;
+            box-shadow: 0 4px 0 #a04000;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #e67e22;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .test-btn {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            font-size: 1rem;
+            padding: 10px;
+            box-shadow: 0 4px 0 #f39c12;
+        }
+        
+        .test-btn:hover {
+            background-color: #f39c12;
+        }
+
+        /* 퀴즈 화면 스타일 */
+        #quiz-screen {
+            text-align: left;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #f1c40f;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            background: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #d35400;
+            word-break: keep-all;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            text-align: left;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            line-height: 1.4;
+            width: 100%;
+            max-width: none;
+            transition: background 0.2s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .option-btn:hover {
+            background-color: #bdc3c7;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+            border-color: #c0392b !important;
+            box-shadow: 0 0 15px #c0392b;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .wrong-message {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 30px;
+            text-align: center;
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .correct-message {
+            color: #2ecc71;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 30px;
+            text-align: center;
+            font-size: 1.3rem;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        /* 결과 화면 스타일 */
+        #result-screen h2 {
+            font-size: 3rem;
+            color: #f1c40f;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 시작 화면 -->
+    <div class="container" id="start-screen">
+        <h1>💀 고1 한글맞춤법<br>지옥의 격파 퀴즈 💀</h1>
+        
+        <!-- 카카오톡 경고 메시지 -->
+        <div id="kakao-warning" class="warning-box">
+            📢 <strong>카카오톡</strong>으로 접속하셨군요!<br>
+            소리가 안 날 수 있습니다.<br>
+            화면 우측 하단/상단의 <strong>[다른 브라우저로 열기]</strong>를 눌러 Chrome이나 Safari에서 실행해주세요.
+        </div>
+
+        <p>진선여고 족보에 나온 띄어쓰기, 사이시옷,<br>된소리 표기 문제 20개다.<br>틀리면 이름 부르며 비웃어주마.</p>
+        
+        <input type="text" id="username" placeholder="이름을 입력하세요" autocomplete="off">
+        <br>
+        <button onclick="startGame()">도전 시작</button>
+        <button onclick="testSound()" class="test-btn">🔊 목소리 테스트</button>
+    </div>
+
+    <!-- 퀴즈 화면 -->
+    <div class="container" id="quiz-screen" style="display: none;">
+        <div class="question-header">
+            <span>문제 <span id="current-q-num">1</span> / 20</span>
+            <span>점수: <span id="score">0</span></span>
+        </div>
+        <div id="question-text" class="question-text">문제 로딩중...</div>
+        <div id="options" class="options"></div>
+        <div id="feedback" class="wrong-message"></div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="container" id="result-screen" style="display: none;">
+        <h1>결과 발표</h1>
+        <p>당신의 최종 점수는?</p>
+        <h2 id="final-score">0점</h2>
+        <p id="final-message">메시지 로딩중...</p>
+        <button onclick="location.reload()">다시 도전하기</button>
+    </div>
+
+    <script>
+        // 카카오톡 브라우저 감지 및 경고 표시
+        if (navigator.userAgent.match(/KAKAOTALK/i)) {
+            document.getElementById('kakao-warning').style.display = 'block';
+        }
+
+        // 진선여고 족보 기반 20문제
+        const questions = [
+            {
+                q: "[띄어쓰기] 다음 중 올바른 띄어쓰기는?",
+                a: ["너밖에 없어", "너 밖에 없어", "너 밖 에 없어", "너밖 에없어", "너밖에없어"],
+                correct: 0 // 조사는 앞말에 붙여 씀
+            },
+            {
+                q: "[띄어쓰기] 다음 중 올바른 띄어쓰기는?",
+                a: ["콩 심은 데 콩 나고", "콩 심은데 콩 나고", "콩심은 데 콩 나고", "콩 심은 곳 콩 나고", "콩 심은 군데 콩 나고"],
+                correct: 0 // '데'는 의존명사이므로 띄어 씀
+            },
+            {
+                q: "[띄어쓰기] 다음 중 올바른 띄어쓰기는?",
+                a: ["떠난 지 한참이 지났다", "떠난지 한참이 지났다", "떠난 지가 한참이다", "떠난지가 한참이다", "떠난 때가 한참이다"],
+                correct: 0 // 시간 경과 '지'는 의존명사이므로 띄어 씀
+            },
+            {
+                q: "[맞춤법] 강풍에 나무가 ( ).",
+                a: ["쓰러졌다", "쓸어졌다", "스러졌다", "쓸러졌다", "슬어졌다"],
+                correct: 0 // 본뜻이 유지되지 않으므로 소리대로 적음
+            },
+            {
+                q: "[맞춤법] 감춰둔 비밀이 드디어 ( ).",
+                a: ["드러났다", "들어났다", "들어 났다", "드러 났다", "들어 놨다"],
+                correct: 0 // '들다'의 뜻이 없으므로 소리대로 적음
+            },
+            {
+                q: "[맞춤법] 국에 고기를 ( ) 넣었다.",
+                a: ["듬뿍", "듬북", "듬푹", "덤뿍", "둠뿍"],
+                correct: 0 // 뚜렷한 까닭 없이 나는 된소리는 된소리로 적음
+            },
+            {
+                q: "[맞춤법] 설렁탕에는 ( )가 제맛이지.",
+                a: ["깍두기", "깍뚜기", "깍뚝이", "각두기", "곽두기"],
+                correct: 0 // ㄱ받침 뒤 된소리는 된소리로 적지 않음 (깍둑+이 -> 깍두기)
+            },
+            {
+                q: "[맞춤법] 아침에 일어나니 눈에 ( )이 끼었다.",
+                a: ["눈곱", "눈꼽", "눈곺", "눈굽", "눈꿉"],
+                correct: 0 // '눈' + '곱'의 합성어. 된소리로 소리나도 적지 않음
+            },
+            {
+                q: "[맞춤법] 아이들이 ( )을 피우며 놀고 있다.",
+                a: ["법석", "법썩", "법섭", "벅적", "법석이"],
+                correct: 0 // ㄱ, ㅂ 받침 뒤 된소리는 된소리로 적지 않음
+            },
+            {
+                q: "[맞춤법] 색종이를 가위로 ( ) 잘랐다.",
+                a: ["싹둑", "싹뚝", "삭둑", "삭뚝", "싹독"],
+                correct: 0 // ㄱ 받침 뒤 된소리지만 된소리로 적지 않음
+            },
+            {
+                q: "[사이시옷] 장마철에 내리는 비는?",
+                a: ["장맛비", "장마비", "장맞비", "장맙비", "장맷비"],
+                correct: 0 // 순우리말+순우리말, 된소리 현상 -> 사이시옷
+            },
+            {
+                q: "[사이시옷] 그것은 흔히 있는 ( )이다.",
+                a: ["예삿일", "예사일", "옛사일", "예산일", "옌삿일"],
+                correct: 0 // 한자어+순우리말, ㄴㄴ 덧남 -> 사이시옷
+            },
+            {
+                q: "[사이시옷] 구름 사이로 ( )이 방긋 웃었다.",
+                a: ["해님", "햇님", "해 님", "햇 님", "헨님"],
+                correct: 0 // '님'은 접미사이므로 사이시옷을 쓰지 않음 (예외 아님)
+            },
+            {
+                q: "[사이시옷] ( )에서 쿵쿵거리는 소리가 났다.",
+                a: ["위층", "윗층", "윗충", "위충", "윗승"],
+                correct: 0 // '층'이 거센소리(ㅊ)이므로 사이시옷 쓰지 않음
+            },
+            {
+                q: "[맞춤법] 선생님, 내일 연구실로 ( ) 될까요?",
+                a: ["찾아봬도", "찾아뵈도", "찾아배도", "찾아베도", "찾아붸도"],
+                correct: 0 // '찾아뵈어도'의 준말 -> 봬도
+            },
+            {
+                q: "[맞춤법] 집에 도착하면 꼭 ( ).",
+                a: ["연락할게", "연락할께", "열락할게", "열락할께", "연락할꼐"],
+                correct: 0 // 어미 '-(으)ㄹ게'는 예사소리로 적음
+            },
+            {
+                q: "[맞춤법] 그 일은 아직 손에 ( ) 않다.",
+                a: ["익숙지", "익숙치", "익쑥지", "익쑥치", "익숙키"],
+                correct: 0 // '익숙하지'의 준말 (ㄱ,ㅂ,ㅅ 뒤에서 '하' 전체 탈락)
+            },
+            {
+                q: "[맞춤법] 올해 취업 ( )이 작년보다 올랐다.",
+                a: ["백분율", "백분률", "백분열", "백분렬", "백분율(오타아님)"],
+                correct: 0 // 모음이나 ㄴ받침 뒤에는 '율'로 적음
+            },
+            {
+                q: "[맞춤법] 졸업식에서 선배가 ( )을 했다.",
+                a: ["인사말", "인삿말", "인산말", "인삽말", "인사말씀"],
+                correct: 0 // 사이시옷 조건 충족 안 함 (발음이 [인산말]이 아님)
+            },
+            {
+                q: "[맞춤법] 물건의 ( )를 정확히 세어라.",
+                a: ["개수", "갯수", "갰수", "개쑤", "계수"],
+                correct: 0 // 한자어+한자어는 사이시옷 안 씀 (예외 6개 아님)
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userName = "";
+
+        // TTS 기능
+        function speak(text) {
+            try {
+                if (!window.speechSynthesis) {
+                    alert("이 브라우저는 음성 지원이 안 됩니다. 크롬이나 사파리를 이용하세요.");
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = 1.2;
+                utterance.pitch = 0.8;
+                utterance.onerror = function(e) { console.log("TTS Error:", e); };
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.error("TTS failed:", e);
+            }
+        }
+
+        // 목소리 테스트 버튼
+        function testSound() {
+            speak("목소리가 잘 들리나요? 준비되면 도전하세요!");
+        }
+
+        function startGame() {
+            const input = document.getElementById('username');
+            const startScreen = document.getElementById('start-screen');
+            const quizScreen = document.getElementById('quiz-screen');
+
+            if (input.value.trim() === "") {
+                alert("이름 적으라고 했다. 겁먹었냐?");
+                input.focus();
+                return;
+            }
+
+            userName = input.value.trim();
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            speak("");
+            setTimeout(showQuestion, 100);
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const qData = questions[currentQuestion];
+            document.getElementById('current-q-num').innerText = currentQuestion + 1;
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = "";
+            
+            const feedback = document.getElementById('feedback');
+            feedback.innerText = "";
+            feedback.className = "wrong-message";
+            document.querySelector('.container').classList.remove('shake');
+
+            // 보기 랜덤 섞기
+            let indices = [0, 1, 2, 3, 4];
+            indices.sort(() => Math.random() - 0.5);
+
+            indices.forEach((idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = qData.a[idx];
+                btn.onclick = function() { checkAnswer(idx, qData.correct, btn); };
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, correctIndex, btnElement) {
+            if (document.getElementById('feedback').innerText !== "") return;
+
+            const container = document.querySelector('.container');
+            const feedback = document.getElementById('feedback');
+            const optionBtns = document.querySelectorAll('.option-btn');
+
+            if (selectedIndex === correctIndex) {
+                score++;
+                document.getElementById('score').innerText = score;
+                feedback.className = "correct-message";
+                feedback.innerText = "오~ 진선여고 1등급 감인데? 정답!";
+                btnElement.style.backgroundColor = "#2ecc71"; 
+                btnElement.style.borderColor = "#2ecc71";
+                setTimeout(nextQuestion, 1200);
+            } else {
+                container.classList.add('shake');
+                feedback.className = "wrong-message";
+                feedback.innerText = `틀렸어! ${userName}, 맞춤법 공부 다시 해!`;
+                btnElement.style.backgroundColor = "#e74c3c"; 
+                
+                // 정답 표시
+                optionBtns.forEach(btn => {
+                    if (btn.innerText === questions[currentQuestion].a[correctIndex]) {
+                        btn.style.backgroundColor = "#2ecc71";
+                        btn.style.color = "white";
+                    }
+                });
+
+                const insults = [
+                    `야 ${userName}! 이게 헷갈리냐?`,
+                    `${userName}, 세종대왕님이 우신다!`,
+                    `진선여고 내신은 물 건너갔다!`,
+                    `틀렸어! 국어 책 좀 읽어라!`,
+                    `아이고 ${userName}아, 정신 좀 차려!`
+                ];
+                const randomInsult = insults[Math.floor(Math.random() * insults.length)];
+                speak(randomInsult);
+
+                setTimeout(() => {
+                    container.classList.remove('shake');
+                    nextQuestion();
+                }, 2500);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            const finalScore = document.getElementById('final-score');
+            finalScore.innerText = `${score} / 20`;
+            
+            const message = document.getElementById('final-message');
+            if (score === 20) {
+                message.innerText = `완벽해! ${userName}, 맞춤법의 신이구나!`;
+                speak(`오, ${userName}. 만점이라니. 인정한다. 대단해.`);
+            } else if (score >= 15) {
+                message.innerText = `나쁘지 않아. 1등급 가능성 있다.`;
+                speak(`${userName}, 수고했다. 조금만 더 하면 완벽해.`);
+            } else {
+                message.innerText = `심각하다... ${userName}아, 국어 학원 다시 등록해라.`;
+                speak(`야, ${userName}. 이 점수로 시험 보러 갈 거냐? 공부 더 하고 와!`);
+            }
+        }
+
+        document.getElementById('username').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+    </script>
+</body>
+</html>
