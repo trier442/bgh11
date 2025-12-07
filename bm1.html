@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배곧 국어 통합 기말고사: 세종대왕의 비밀 과거시험</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Jua', sans-serif; background-color: #fce7f3; }
+        .serif { font-family: 'Noto Serif KR', serif; }
+        .card-shadow { box-shadow: 8px 8px 0px 0px rgba(0,0,0,0.1); }
+        .btn-press { transition: all 0.1s; box-shadow: 0px 4px 0px 0px #b91c1c; }
+        .btn-press:active { transform: translateY(4px); box-shadow: 0px 0px 0px 0px #b91c1c; }
+        .correct-anim { animation: bounce 0.5s; }
+        .wrong-anim { animation: shake 0.4s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body class="bg-amber-50 text-gray-800 min-h-screen flex items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/korean-pattern.png')]">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 아이콘 컴포넌트들 (SVG 직접 정의로 라이브러리 의존성 제거)
+        const IconTrophy = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+        const IconScroll = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 17.5a5 5 0 0 1 5-5c2.5 0 4.8 2 6.5 4.5"/><path d="M8 2h9a5 5 0 0 1 5 5v11a4 4 0 0 1-3.6 4"/><path d="M19 22a3 3 0 0 1-2.5-1.5"/><path d="M8 2a3 3 0 0 0-3 3v13.5a3.5 3.5 0 0 0 4.5 3.5H19"/><path d="M8 11.5a5 5 0 0 0 5 5 5 5 0 0 0 6.5-4.5"/></svg>;
+        const IconStar = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        const IconX = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg>;
+
+        function App() {
+            const [gameState, setGameState] = useState('start'); // start, playing, result
+            const [currentQ, setCurrentQ] = useState(0);
+            const [score, setScore] = useState(0);
+            const [feedback, setFeedback] = useState(null); // 'correct' or 'wrong'
+            const [selectedOption, setSelectedOption] = useState(null);
+
+            // 20문제 데이터셋
+            const questions = [
+                // 1. 훈민정음 (5문제)
+                {
+                    id: 1,
+                    category: "훈민정음 창제",
+                    q: "세종대왕님이 훈민정음을 창제하신 근본적인 까닭은?",
+                    options: [
+                        "중국의 한자를 더 잘 익히기 위해",
+                        "백성들이 제 뜻을 쉽게 펴고 지혜로워지길 바라서",
+                        "양반들의 기득권을 강화하기 위해",
+                        "외국의 문물을 받아들이기 위해"
+                    ],
+                    answer: 1,
+                    explanation: "세종대왕은 어리석은 백성이 말하고자 하는 바가 있어도 제 뜻을 펴지 못하는 것을 딱하게 여겨 훈민정음을 창제했습니다."
+                },
+                {
+                    id: 2,
+                    category: "훈민정음 원리",
+                    q: "자음 기본자(ㄱ, ㄴ, ㅁ, ㅅ, ㅇ)는 무엇을 본떠 만들었을까요?",
+                    options: [
+                        "하늘, 땅, 사람",
+                        "발음 기관의 모양",
+                        "자연의 소리",
+                        "동물의 움직임"
+                    ],
+                    answer: 1,
+                    explanation: "자음은 혀, 입술, 이, 목구멍 등 사람의 발음 기관 모양을 본떠(상형) 만들었습니다."
+                },
+                {
+                    id: 3,
+                    category: "훈민정음 원리",
+                    q: "모음의 기본자 'ㆍ(아래아)'가 상징하는 것은?",
+                    options: [
+                        "하늘의 둥근 모양",
+                        "땅의 평평한 모양",
+                        "사람이 서 있는 모양",
+                        "해와 달"
+                    ],
+                    answer: 0,
+                    explanation: "ㆍ(하늘), ㅡ(땅), ㅣ(사람)을 본떠 모음 기본자를 만들었습니다."
+                },
+                {
+                    id: 4,
+                    category: "훈민정음 운용",
+                    q: "자음 글자를 가로로 나란히 쓰는 방식(예: ㄲ, ㄸ)을 무엇이라 할까요?",
+                    options: [
+                        "연서(이어쓰기)",
+                        "병서(나란히쓰기)",
+                        "부서(붙여쓰기)",
+                        "성조(소리의 높낮이)"
+                    ],
+                    answer: 1,
+                    explanation: "자음을 옆으로 나란히 쓰는 것을 병서(갈바쓰기)라고 합니다."
+                },
+                {
+                    id: 5,
+                    category: "훈민정음",
+                    q: "훈민정음 창제 당시 자음과 모음의 개수는?",
+                    options: [
+                        "자음 14자, 모음 10자 (총 24자)",
+                        "자음 17자, 모음 11자 (총 28자)",
+                        "자음 19자, 모음 21자 (총 40자)",
+                        "자음 10자, 모음 10자 (총 20자)"
+                    ],
+                    answer: 1,
+                    explanation: "창제 당시에는 자음 17자, 모음 11자로 총 28자였습니다. (현재는 4글자 소실)"
+                },
+                
+                // 2. 띄어쓰기 및 맞춤법 (8문제)
+                {
+                    id: 6,
+                    category: "띄어쓰기",
+                    q: "다음 중 띄어쓰기가 올바른 것은?",
+                    options: [
+                        "너 밖에 없어",
+                        "너밖에 없어",
+                        "너 밬에 없어",
+                        "너 밖 에 없어"
+                    ],
+                    answer: 1,
+                    explanation: "여기서 '밖에'는 '그것 말고는'의 뜻을 가진 '조사'이므로 앞말에 붙여 써야 합니다."
+                },
+                {
+                    id: 7,
+                    category: "띄어쓰기",
+                    q: "다음 중 띄어쓰기가 틀린 것은?",
+                    options: [
+                        "꿈꾸는 대로",
+                        "이해하는 대로",
+                        "법대로",
+                        "너뿐 이라고"
+                    ],
+                    answer: 3,
+                    explanation: "'너뿐이라고'에서 '뿐'과 '이라고'는 모두 조사이므로 체언 '너' 뒤에 모두 붙여 써야 합니다."
+                },
+                {
+                    id: 8,
+                    category: "띄어쓰기",
+                    q: "'나무 한 그루'의 띄어쓰기가 맞는 이유는?",
+                    options: [
+                        "'한'과 '그루'가 모두 명사라서",
+                        "'그루'가 단위를 나타내는 명사라서",
+                        "'한'이 조사라서",
+                        "보기에 좋아서"
+                    ],
+                    answer: 1,
+                    explanation: "단위를 나타내는 명사(그루, 마리, 개 등)는 앞말과 띄어 씁니다."
+                },
+                {
+                    id: 9,
+                    category: "맞춤법",
+                    q: "'보이기는커녕'에서 '는커녕'은 붙여 쓸까요, 띄어 쓸까요?",
+                    options: [
+                        "붙여 쓴다 (보조사)",
+                        "띄어 쓴다 (의존명사)",
+                        "띄어 쓴다 (관형사)",
+                        "상황에 따라 다르다"
+                    ],
+                    answer: 0,
+                    explanation: "'는커녕'은 보조사이므로 앞말에 붙여 써야 합니다."
+                },
+                {
+                    id: 10,
+                    category: "맞춤법",
+                    q: "다음 중 표기가 올바른 단어는?",
+                    options: [
+                        "싹뚝",
+                        "싹둑",
+                        "싹뚜욱",
+                        "삭뚝"
+                    ],
+                    answer: 1,
+                    explanation: "'ㄱ' 받침 뒤에서 나는 된소리는, 같은 음절이 겹치지 않는 한 된소리로 적지 않습니다. (예: 깍두기, 싹둑)"
+                },
+                {
+                    id: 11,
+                    category: "맞춤법",
+                    q: "다음 중 표기가 올바른 단어는?",
+                    options: [
+                        "눈꼽",
+                        "눈곱",
+                        "눈콥",
+                        "누곱"
+                    ],
+                    answer: 1,
+                    explanation: "뚜렷한 까닭 없이 나는 된소리가 아니므로(합성어 등) 원형을 밝혀 '눈곱'으로 적습니다."
+                },
+                {
+                    id: 12,
+                    category: "맞춤법",
+                    q: "'물 등을 그릇에 넘치도록 담다'의 뜻을 가진 단어는?",
+                    options: [
+                        "담북",
+                        "담뿍",
+                        "담푹",
+                        "담뿌욱"
+                    ],
+                    answer: 1,
+                    explanation: "'ㅁ' 받침 뒤에서 뚜렷한 까닭 없이 나는 된소리는 된소리로 적습니다. (예: 담뿍, 함빡)"
+                },
+                {
+                    id: 13,
+                    category: "맞춤법",
+                    q: "다음 중 원형을 밝혀 적지 않고 '소리대로' 적는 경우는?",
+                    options: [
+                        "길이 (길다+이)",
+                        "많이 (많다+이)",
+                        "지붕 (집+웅)",
+                        "믿음 (믿다+음)"
+                    ],
+                    answer: 2,
+                    explanation: "'집+웅'은 '-이/-음' 이외의 모음 접미사가 붙어 본뜻에서 멀어진 경우이므로 소리대로 '지붕'이라 적습니다."
+                },
+
+                // 3. 표준 발음법 (2문제)
+                {
+                    id: 14,
+                    category: "표준 발음",
+                    q: "'넓죽하다'의 올바른 발음은?",
+                    options: [
+                        "[널죽하다]",
+                        "[넙쭈카다]",
+                        "[널쭈카다]",
+                        "[넙죽하다]"
+                    ],
+                    answer: 1,
+                    explanation: "'넓-'은 자음 앞에서 [널]로 발음하는 것이 원칙이나, '넓죽하다', '넓둥글다'는 예외적으로 [넙]으로 발음합니다."
+                },
+                {
+                    id: 15,
+                    category: "표준 발음",
+                    q: "'민주주의의 의의'에서 마지막 '의'는 어떻게 발음할 수 있을까요?",
+                    options: [
+                        "[의]로만 발음해야 한다.",
+                        "[이]로 발음하는 것도 허용한다.",
+                        "[에]로 발음해야 한다.",
+                        "[위]로 발음한다."
+                    ],
+                    answer: 1,
+                    explanation: "단어의 첫음절 이외의 '의'는 [이]로, 조사 '의'는 [에]로 발음함도 허용합니다."
+                },
+
+                // 4. 춘향전 (5문제)
+                {
+                    id: 16,
+                    category: "춘향전",
+                    q: "이몽룡이 읊은 시 '금준미주 천인혈'에서 '안주(가효)'는 무엇을 비유할까요?",
+                    options: [
+                        "맛있는 고기",
+                        "백성의 기름(고혈)",
+                        "변 사또의 인심",
+                        "왕의 은혜"
+                    ],
+                    answer: 1,
+                    explanation: "'옥반가효 만성고' - 옥쟁반의 맛있는 안주는 만백성의 기름이라고 표현하며 탐관오리를 비판했습니다."
+                },
+                {
+                    id: 17,
+                    category: "춘향전",
+                    q: "춘향이 옥에서 풀려나 이몽룡(어사또)을 알아본 후의 심정 표현으로 적절한 것은?",
+                    options: [
+                        "얼씨구나 좋을씨고",
+                        "아이고 아이고 설워라",
+                        "분하고 원통하구나",
+                        "무섭고 두렵구나"
+                    ],
+                    answer: 0,
+                    explanation: "죽을 줄만 알았던 춘향은 어사또가 된 이몽룡을 보고 기쁨에 겨워 '얼씨구나 좋을씨고'라고 노래합니다."
+                },
+                {
+                    id: 18,
+                    category: "춘향전",
+                    q: "이몽룡이 거지 행색으로 왔을 때, 변 사또와 운봉 수령은 무엇을 하고 있었나요?",
+                    options: [
+                        "백성을 구제하는 회의",
+                        "생일 잔치",
+                        "과거 시험 공부",
+                        "낮잠"
+                    ],
+                    answer: 1,
+                    explanation: "변학도는 백성들은 굶주리는데 호화로운 생일 잔치를 벌이고 있었습니다."
+                },
+                {
+                    id: 19,
+                    category: "춘향전",
+                    q: "다음 중 춘향전의 특징이 아닌 것은?",
+                    options: [
+                        "판소리계 소설이다.",
+                        "해피 엔딩으로 끝난다.",
+                        "비극적인 결말을 암시한다.",
+                        "운문체와 산문체가 섞여 있다."
+                    ],
+                    answer: 2,
+                    explanation: "춘향전은 춘향과 이몽룡이 재회하여 행복하게 사는 해피 엔딩입니다."
+                },
+                {
+                    id: 20,
+                    category: "춘향전",
+                    q: "이 글의 주제로 가장 적절한 것은?",
+                    options: [
+                        "형제간의 우애",
+                        "신분을 초월한 사랑과 탐관오리 징계",
+                        "부모님에 대한 효도",
+                        "나라를 위한 희생"
+                    ],
+                    answer: 1,
+                    explanation: "춘향전은 남녀 간의 지고지순한 사랑과 변학도로 대표되는 부패한 지배층에 대한 비판을 담고 있습니다."
+                }
+            ];
+
+            const handleAnswer = (idx) => {
+                if (feedback) return; // 이미 답을 골랐으면 무시
+                setSelectedOption(idx);
+                
+                if (idx === questions[currentQ].answer) {
+                    setFeedback('correct');
+                    setScore(score + 5); // 20문제이므로 5점씩
+                    // 효과음 대신 진동 (모바일)
+                    if (navigator.vibrate) navigator.vibrate(50);
+                } else {
+                    setFeedback('wrong');
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                }
+
+                // 2초 뒤 다음 문제
+                setTimeout(() => {
+                    if (currentQ < questions.length - 1) {
+                        setCurrentQ(currentQ + 1);
+                        setFeedback(null);
+                        setSelectedOption(null);
+                    } else {
+                        setGameState('result');
+                    }
+                }, 2500);
+            };
+
+            const getRank = () => {
+                if (score === 100) return { title: "장원 급제!", desc: "전하께서 칭찬을 아끼지 않으십니다!", color: "text-yellow-600" };
+                if (score >= 80) return { title: "진사 합격", desc: "훌륭합니다! 벼슬길이 열렸습니다.", color: "text-blue-600" };
+                if (score >= 60) return { title: "서당 훈장님", desc: "기본은 되어 있으시군요.", color: "text-green-600" };
+                return { title: "낙방 거사", desc: "내년에 다시 도전하세요!", color: "text-stone-500" };
+            };
+
+            // 시작 화면
+            if (gameState === 'start') {
+                return (
+                    <div className="max-w-md w-full bg-white rounded-3xl p-8 text-center card-shadow border-4 border-stone-800 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-4 bg-red-500"></div>
+                        <div className="flex justify-center mb-6 mt-4">
+                            <div className="bg-yellow-100 p-4 rounded-full border-4 border-stone-800">
+                                <IconScroll className="w-16 h-16 text-yellow-700" />
+                            </div>
+                        </div>
+                        <h1 className="text-4xl font-black mb-2 text-stone-800 tracking-tighter">세종대왕의<br/><span className="text-red-600">비밀 과거시험</span></h1>
+                        <p className="text-stone-500 mb-8 font-bold text-lg">통합 기말고사 대비 (업그레이드)</p>
+                        
+                        <div className="space-y-2 mb-8 text-left bg-stone-100 p-4 rounded-xl border-2 border-stone-300">
+                            <p className="flex items-center gap-2">✅ <span className="font-bold text-stone-700">시험 범위:</span> 훈민정음, 맞춤법, 춘향전</p>
+                            <p className="flex items-center gap-2">✅ <span className="font-bold text-stone-700">문항 수:</span> 총 20문제</p>
+                            <p className="flex items-center gap-2">✅ <span className="font-bold text-stone-700">목표:</span> 장원 급제 (100점)</p>
+                        </div>
+
+                        <button 
+                            onClick={() => setGameState('playing')}
+                            className="w-full bg-red-600 text-white text-2xl font-bold py-4 rounded-xl border-b-4 border-red-800 btn-press hover:bg-red-500"
+                        >
+                            시험 치르기 🖌️
+                        </button>
+                    </div>
+                );
+            }
+
+            // 결과 화면
+            if (gameState === 'result') {
+                const rank = getRank();
+                return (
+                    <div className="max-w-md w-full bg-white rounded-3xl p-8 text-center card-shadow border-4 border-stone-800">
+                        <div className="flex justify-center mb-4">
+                            {score === 100 ? 
+                                <IconTrophy className="w-20 h-20 text-yellow-500 animate-bounce" /> : 
+                                <IconStar className="w-20 h-20 text-blue-500" />
+                            }
+                        </div>
+                        <h2 className="text-2xl font-bold text-stone-600 mb-2">과거시험 결과</h2>
+                        <h1 className={`text-5xl font-black mb-4 ${rank.color} drop-shadow-sm`}>{rank.title}</h1>
+                        <div className="text-6xl font-black text-stone-800 mb-2">{score}<span className="text-2xl text-stone-400">점</span></div>
+                        <p className="text-stone-500 font-bold mb-8 bg-stone-100 py-2 rounded-lg">{rank.desc}</p>
+                        
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={() => {
+                                    setGameState('start');
+                                    setScore(0);
+                                    setCurrentQ(0);
+                                    setFeedback(null);
+                                }}
+                                className="flex-1 bg-stone-800 text-white text-xl font-bold py-3 rounded-xl border-b-4 border-stone-950 btn-press"
+                            >
+                                다시 도전
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 게임 화면
+            const q = questions[currentQ];
+            return (
+                <div className="max-w-md w-full relative">
+                    {/* Progress Bar */}
+                    <div className="absolute -top-12 left-0 w-full h-6 bg-stone-200 rounded-full border-4 border-stone-800 overflow-hidden">
+                        <div 
+                            className="h-full bg-green-500 transition-all duration-500"
+                            style={{ width: `${((currentQ) / questions.length) * 100}%` }}
+                        ></div>
+                    </div>
+
+                    <div className={`bg-white rounded-3xl p-6 card-shadow border-4 border-stone-800 min-h-[500px] flex flex-col ${feedback === 'correct' ? 'border-green-500' : feedback === 'wrong' ? 'border-red-500' : ''}`}>
+                        
+                        {/* Header */}
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full font-bold text-sm border-2 border-yellow-400">
+                                {q.category}
+                            </span>
+                            <span className="text-stone-400 font-bold text-lg">{currentQ + 1} / {questions.length}</span>
+                        </div>
+
+                        {/* Question */}
+                        <h2 className="text-2xl font-bold text-stone-800 mb-8 leading-snug break-keep serif">
+                            {q.q}
+                        </h2>
+
+                        {/* Options */}
+                        <div className="space-y-3 flex-1">
+                            {q.options.map((opt, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleAnswer(idx)}
+                                    disabled={feedback !== null}
+                                    className={`w-full p-4 rounded-xl font-bold text-lg text-left border-b-4 transition-all relative
+                                        ${feedback === null 
+                                            ? 'bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100 hover:border-stone-300 active:border-b-0 active:translate-y-1' 
+                                            : idx === q.answer 
+                                                ? 'bg-green-100 text-green-800 border-green-400' 
+                                                : idx === selectedOption 
+                                                    ? 'bg-red-100 text-red-800 border-red-400' 
+                                                    : 'bg-stone-50 text-stone-300 border-stone-100'
+                                        }
+                                    `}
+                                >
+                                    {feedback && idx === q.answer && <IconStar className="absolute right-4 top-4 text-green-600" />}
+                                    {feedback && idx === selectedOption && idx !== q.answer && <IconX className="absolute right-4 top-4 text-red-600" />}
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Feedback Overlay (Explanation) */}
+                        {feedback && (
+                            <div className={`mt-6 p-4 rounded-2xl border-2 animate-fade-in ${feedback === 'correct' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                                <div className="font-bold mb-1 flex items-center gap-2">
+                                    {feedback === 'correct' ? '🎉 정답입니다!' : '🤔 아쉽네요!'}
+                                </div>
+                                <p className="text-sm text-stone-600 leading-relaxed">
+                                    {q.explanation}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
