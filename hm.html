@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, BookOpen, RefreshCw, ChevronRight } from 'lucide-react';
 
-const QuizApp = () => {
+export default function App() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [showScore, setShowScore] = useState(false);
@@ -472,6 +472,4 @@ const QuizApp = () => {
       </div>
     </div>
   );
-};
-
-export default QuizApp;
+}
